@@ -7,7 +7,29 @@ import { normalizeAngle, selectFacingDirection } from '../sprites/enemies/frameU
 import { SPRITE_HEIGHT, SPRITE_WIDTH, spriteGenerator } from '../sprites/SpriteGenerator.js';
 import { Screen } from './screen.js';
 
+const FOG_NEAR = 3;
+const FOG_FAR = 10;
+
 const spriteQueue = [];
+
+function applyFog(color, distance) {
+    const fogAmount = Math.max(0, Math.min(1, (distance - FOG_NEAR) / (FOG_FAR - FOG_NEAR)));
+    if (fogAmount <= 0) {
+        return color;
+    }
+
+    const r = color & 0xFF;
+    const g = (color >> 8) & 0xFF;
+    const b = (color >> 16) & 0xFF;
+    const retained = 1 - fogAmount;
+
+    return (
+        0xFF000000 |
+        (Math.round(b * retained) << 16) |
+        (Math.round(g * retained) << 8) |
+        Math.round(r * retained)
+    );
+}
 
 function fillRect(screen, x, y, width, height, color, depthBuffer, spriteDepth) {
     const startX = Math.max(0, Math.floor(x));
@@ -58,18 +80,18 @@ function blitSprite(screen, spritePixels, destX, destY, destWidth, destHeight, d
                 continue;
             }
 
-            pixels[rowOffset + px] = color;
+            pixels[rowOffset + px] = applyFog(color, spriteDepth);
         }
     }
 }
 
 function drawProjectile(screen, projectile, x, y, size, depthBuffer, spriteDepth) {
-    const glowColor = projectile.type === 'plasma'
+    const glowColor = applyFog(projectile.type === 'plasma'
         ? Screen.rgb(72, 244, 255)
-        : Screen.rgb(255, 196, 72);
-    const coreColor = projectile.type === 'plasma'
+        : Screen.rgb(255, 196, 72), spriteDepth);
+    const coreColor = applyFog(projectile.type === 'plasma'
         ? Screen.rgb(220, 255, 255)
-        : Screen.rgb(255, 255, 196);
+        : Screen.rgb(255, 255, 196), spriteDepth);
     const pulse = 0.82 + Math.sin(projectile.age * 20) * 0.12;
     const glowSize = size * pulse;
 
