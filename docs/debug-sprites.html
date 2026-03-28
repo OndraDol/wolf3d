@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wolf3D Debug — Sprites</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #101316;
+            --panel: #1c242c;
+            --line: #2a3844;
+            --text: #e7edf4;
+            --muted: #93a2b3;
+            --accent: #88c0d0;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top right, rgba(136, 192, 208, 0.13), transparent 38%),
+                linear-gradient(180deg, #12171b 0%, var(--bg) 100%);
+            color: var(--text);
+            font: 14px/1.45 monospace;
+        }
+        header {
+            padding: 24px 28px 12px;
+        }
+        h1 {
+            margin: 0 0 6px;
+            font-size: 22px;
+        }
+        p {
+            margin: 0;
+            color: var(--muted);
+        }
+        main {
+            padding: 12px 28px 32px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+        }
+        .card {
+            padding: 12px;
+            background: rgba(28, 36, 44, 0.92);
+            border: 1px solid var(--line);
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            aspect-ratio: 1;
+            image-rendering: pixelated;
+            background:
+                linear-gradient(180deg, #1a1f26 0 56%, #111 56% 100%);
+            border: 1px solid #000;
+        }
+        .meta {
+            margin-top: 10px;
+            display: grid;
+            gap: 2px;
+        }
+        .key {
+            color: var(--accent);
+            font-weight: 700;
+        }
+        .label {
+            color: var(--text);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Canvas 2D Painted Sprites</h1>
+        <p>Foundation debug galerie pro sprite generator registry.</p>
+    </header>
+    <main>
+        <section class="grid" id="grid"></section>
+    </main>
+    <script type="module">
+        import { SPRITE_HEIGHT, SPRITE_WIDTH, spriteGenerator } from '../src/sprites/SpriteGenerator.js';
+
+        const manifest = spriteGenerator.getManifest();
+        spriteGenerator.preload(manifest.map((entry) => entry.key));
+
+        const grid = document.getElementById('grid');
+
+        function renderPixels(target, pixels) {
+            const ctx = target.getContext('2d');
+            const imageData = ctx.createImageData(SPRITE_WIDTH, SPRITE_HEIGHT);
+            new Uint32Array(imageData.data.buffer).set(pixels);
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        for (const entry of manifest) {
+            const card = document.createElement('article');
+            card.className = 'card';
+
+            const canvas = document.createElement('canvas');
+            canvas.width = SPRITE_WIDTH;
+            canvas.height = SPRITE_HEIGHT;
+            renderPixels(canvas, spriteGenerator.paintSprite(entry.key));
+
+            const meta = document.createElement('div');
+            meta.className = 'meta';
+            meta.innerHTML = `
+                <div class="key">${entry.key}</div>
+                <div class="label">${entry.label}</div>
+            `;
+
+            card.append(canvas, meta);
+            grid.append(card);
+        }
+    </script>
+</body>
+</html>
+

@@ -1,23 +1,19 @@
 /**
- * DDA Raycaster — jádro renderovacího enginu.
- *
- * Algoritmus:
- * Pro každý sloupec obrazovky vyšle paprsek z pozice kamery.
- * Paprsek prochází mapovou mřížkou (DDA stepping) dokud nenarazí na stěnu.
- * Výsledek: vzdálenost, typ stěny, pozice zásahu (pro texturu), orientace (N/S vs E/W).
- *
- * Implementace bude následovat v další fázi.
+ * DDA raycaster with reusable hit records and a stable depth buffer.
  */
 
-/** Výsledek jednoho paprsku */
 export class RayHit {
     constructor() {
-        this.distance = 0;      // Perpendicular distance (ne Euclidean — kvůli fish-eye korekci)
-        this.tileType = 0;      // Typ stěny (1–63)
-        this.textureX = 0;      // Pozice zásahu na stěně (0.0–1.0) pro texture mapping
-        this.side = 0;          // 0 = N/S (vertical grid line), 1 = E/W (horizontal grid line)
-        this.mapX = 0;          // Tile souřadnice zásahu
+        this.distance = Infinity;
+        this.rayDistance = Infinity;
+        this.tileType = 0;
+        this.textureX = 0;
+        this.side = 0;
+        this.mapX = 0;
         this.mapY = 0;
+        this.hitX = 0;
+        this.hitY = 0;
+        this.angle = 0;
     }
 }
 
@@ -27,50 +23,41 @@ export class Raycaster {
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         this.rays = new Array(screenWidth);
+        this.depthBuffer = new Float32Array(screenWidth);
+
         for (let i = 0; i < screenWidth; i++) {
             this.rays[i] = new RayHit();
+            this.depthBuffer[i] = Infinity;
         }
     }
 
-    /**
-     * Vyšli paprsky pro všechny sloupce obrazovky.
-     * @param {Camera} camera
-     * @returns {RayHit[]} pole výsledků pro každý sloupec
-     */
     castRays(camera) {
         const halfFov = camera.fov / 2;
 
         for (let col = 0; col < this.screenWidth; col++) {
-            // Úhel paprsku — od levého kraje FOV po pravý
-            const screenX = (2 * col / this.screenWidth) - 1; // -1 (vlevo) až +1 (vpravo)
+            const screenX = (2 * col / this.screenWidth) - 1;
             const rayAngle = camera.angle + Math.atan(screenX * Math.tan(halfFov));
-
             this.castSingleRay(col, camera.x, camera.y, rayAngle, camera.angle);
         }
 
         return this.rays;
     }
 
-    /**
-     * DDA algoritmus pro jeden paprsek.
-     * Bude plně implementován v další fázi.
-     */
     castSingleRay(col, originX, originY, rayAngle, cameraAngle) {
         const ray = this.rays[col];
         const dirX = Math.cos(rayAngle);
         const dirY = Math.sin(rayAngle);
 
-        // Aktuální tile
         let mapX = Math.floor(originX);
         let mapY = Math.floor(originY);
 
-        // DDA: délka paprsku k další vertikální/horizontální grid čáře
         const deltaDistX = Math.abs(1 / dirX);
         const deltaDistY = Math.abs(1 / dirY);
 
-        // Krok a počáteční vzdálenost k první grid čáře
-        let stepX, sideDistX;
-        let stepY, sideDistY;
+        let stepX;
+        let stepY;
+        let sideDistX;
+        let sideDistY;
 
         if (dirX < 0) {
             stepX = -1;
@@ -88,11 +75,16 @@ export class Raycaster {
             sideDistY = (mapY + 1 - originY) * deltaDistY;
         }
 
-        // DDA stepping
-        let side = 0;
         let hit = false;
+        let side = 0;
+        let tileType = 0;
+        let rayDistance = Infinity;
+        let hitX = originX;
+        let hitY = originY;
+        let textureX = 0;
+        let safety = this.map.width * this.map.height * 4;
 
-        while (!hit) {
+        while (!hit && safety-- > 0) {
             if (sideDistX < sideDistY) {
                 sideDistX += deltaDistX;
                 mapX += stepX;
@@ -103,34 +95,47 @@ export class Raycaster {
                 side = 1;
             }
 
-            const tile = this.map.getTile(mapX, mapY);
-            if (tile > 0 && tile < 64) {
+            tileType = this.map.getTile(mapX, mapY);
+
+            if (this.map.isWallTile(tileType)) {
+                rayDistance = side === 0
+                    ? (mapX - originX + (1 - stepX) / 2) / dirX
+                    : (mapY - originY + (1 - stepY) / 2) / dirY;
+                hitX = originX + rayDistance * dirX;
+                hitY = originY + rayDistance * dirY;
+                textureX = side === 0 ? hitY - Math.floor(hitY) : hitX - Math.floor(hitX);
                 hit = true;
-                ray.tileType = tile;
+                continue;
+            }
+
+            if (this.map.isDoorTile(tileType)) {
+                const doorHit = this.map.raycastDoor(mapX, mapY, originX, originY, dirX, dirY);
+                if (doorHit) {
+                    rayDistance = doorHit.distance;
+                    hitX = doorHit.hitX;
+                    hitY = doorHit.hitY;
+                    textureX = doorHit.textureX;
+                    side = doorHit.side;
+                    hit = true;
+                }
             }
         }
 
-        // Perpendicular distance (opravuje fish-eye)
-        let perpDist;
-        if (side === 0) {
-            perpDist = (mapX - originX + (1 - stepX) / 2) / dirX;
-        } else {
-            perpDist = (mapY - originY + (1 - stepY) / 2) / dirY;
-        }
+        const correctedDistance = hit
+            ? Math.max(0.0001, rayDistance * Math.cos(rayAngle - cameraAngle))
+            : Infinity;
 
-        // Texture coordinate (kde na stěně paprsek zasáhl — 0.0 až 1.0)
-        let wallX;
-        if (side === 0) {
-            wallX = originY + perpDist * dirY;
-        } else {
-            wallX = originX + perpDist * dirX;
-        }
-        wallX -= Math.floor(wallX);
-
-        ray.distance = perpDist;
-        ray.textureX = wallX;
+        ray.distance = correctedDistance;
+        ray.rayDistance = rayDistance;
+        ray.tileType = hit ? tileType : 0;
+        ray.textureX = textureX;
         ray.side = side;
         ray.mapX = mapX;
         ray.mapY = mapY;
+        ray.hitX = hitX;
+        ray.hitY = hitY;
+        ray.angle = rayAngle;
+
+        this.depthBuffer[col] = correctedDistance;
     }
 }
