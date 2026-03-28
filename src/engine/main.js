@@ -216,6 +216,19 @@ function applyEnemyDamage(amount) {
     return gameState.applyDamage(scaledAmount);
 }
 
+function handleFullscreenToggle() {
+    if (!input.consumePressed('F11') && !input.consumePressed('KeyP') && !input.consumePressed('Backquote')) {
+        return;
+    }
+
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+        return;
+    }
+
+    document.exitFullscreen().catch(() => {});
+}
+
 function spawnProjectile(spec) {
     const length = Math.hypot(spec.dx, spec.dy) || 1;
     projectiles.push({
@@ -672,6 +685,7 @@ function advanceFlowIfNeeded() {
 
 function update(dt) {
     handleShellInput();
+    handleFullscreenToggle();
     const statusBeforeUpdate = gameState.levelStatus;
     gameState.tick(dt);
 

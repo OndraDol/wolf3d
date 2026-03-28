@@ -14,7 +14,7 @@ export class Input {
             }
             this.keys.add(e.code);
             // Prevent scrolling with arrow keys
-            if (e.code.startsWith('Arrow')) e.preventDefault();
+            if (e.code.startsWith('Arrow') || e.code === 'F11') e.preventDefault();
         });
 
         window.addEventListener('keyup', (e) => {

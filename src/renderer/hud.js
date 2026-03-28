@@ -292,7 +292,7 @@ function drawPauseOverlay(ctx, canvasWidth, canvasHeight, level) {
 function drawHelpOverlay(ctx, canvasWidth, canvasHeight, level) {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.58)';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    const panel = drawCenteredPanel(ctx, canvasWidth, canvasHeight, 470, 236);
+    const panel = drawCenteredPanel(ctx, canvasWidth, canvasHeight, 470, 260);
     ctx.fillStyle = '#fff6ce';
     ctx.font = 'bold 24px monospace';
     ctx.fillText('FIELD MANUAL', panel.left + 20, panel.top + 36);
@@ -304,7 +304,8 @@ function drawHelpOverlay(ctx, canvasWidth, canvasHeight, level) {
     ctx.fillText('Ctrl/Enter/F fire  1/2/3/4/5 weapon switch', panel.left + 20, panel.top + 148);
     ctx.fillText('Armor absorbs part of incoming damage.', panel.left + 20, panel.top + 172);
     ctx.fillText('Secrets and treasure boost score and intermission stats.', panel.left + 20, panel.top + 196);
-    ctx.fillText('H or Esc closes this overlay.', panel.left + 20, panel.top + 220);
+    ctx.fillText('F11, P or ` toggles fullscreen.', panel.left + 20, panel.top + 220);
+    ctx.fillText('H or Esc closes this overlay.', panel.left + 20, panel.top + 244);
 }
 
 export function drawHUD(ctx, frame) {
