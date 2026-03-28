@@ -3,6 +3,7 @@
  */
 
 import { moveCircle } from '../engine/collision.js';
+import { DIFFICULTY } from '../game/state.js';
 
 export const EnemyState = {
     STAND: 'stand',
@@ -122,15 +123,19 @@ export function getEnemyArchetype(type = 'guard') {
     return ENEMY_ARCHETYPES[type] ?? ENEMY_ARCHETYPES.guard;
 }
 
+function getDifficultySettings(gameState) {
+    return DIFFICULTY[gameState?.difficulty] ?? DIFFICULTY.normal;
+}
+
 export class Enemy {
-    constructor(x, y, type = 'guard', options = {}) {
+    constructor(x, y, type = 'guard', options = {}, gameState = null) {
         this.id = options.id ?? null;
         this.x = x;
         this.y = y;
         this.type = type;
         this.archetype = getEnemyArchetype(type);
         this.state = EnemyState.STAND;
-        this.health = this.archetype.health;
+        this.health = Math.max(1, Math.round(this.archetype.health * getDifficultySettings(gameState).enemyHealthScale));
         this.speed = this.archetype.speed;
         this.chaseSpeed = this.archetype.chaseSpeed;
         this.angle = options.angle ?? 0;
@@ -289,7 +294,7 @@ export class Enemy {
         if (attack.type === 'burst') {
             const totalDamage = this.performBurstAttack(player, attack);
             if (totalDamage > 0) {
-                gameState?.applyDamage(totalDamage);
+                context.applyPlayerDamage?.(totalDamage) ?? gameState?.applyDamage(totalDamage);
             }
             context.playSound?.('enemy-shot');
             return;
@@ -316,7 +321,7 @@ export class Enemy {
         }
 
         const damage = attack.damage + Math.round(Math.random() * 3);
-        gameState?.applyDamage(clamp(damage, 1, 99));
+        context.applyPlayerDamage?.(clamp(damage, 1, 99)) ?? gameState?.applyDamage(clamp(damage, 1, 99));
     }
 
     performBurstAttack(player, attack) {

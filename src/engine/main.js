@@ -5,7 +5,7 @@
 import { Enemy } from '../ai/enemy.js';
 import { startMusic, stopMusic } from '../audio/music.js';
 import { getAudioContext, initAudio, playSound } from '../audio/synth.js';
-import { GameState } from '../game/state.js';
+import { DIFFICULTY, GameState } from '../game/state.js';
 import { getLevel, loadLevel } from '../game/level.js';
 import { getWeapon, getWeaponBySlot, WEAPON_ORDER } from '../game/weapons.js';
 import { initTextures } from '../procedural/textures.js';
@@ -29,6 +29,8 @@ const FIRE_KEYS = ['ControlLeft', 'ControlRight', 'Enter', 'KeyF'];
 const START_KEYS = ['Enter', 'Space'];
 const RESTART_KEYS = ['Enter', 'KeyR'];
 const HELP_KEYS = ['KeyH', 'Slash'];
+const TITLE_UP_KEYS = ['ArrowUp', 'KeyW'];
+const TITLE_DOWN_KEYS = ['ArrowDown', 'KeyS'];
 const PICKUP_RANGE = 0.55;
 const EXIT_RANGE = 1.4;
 
@@ -108,26 +110,29 @@ function syncRenderFrame() {
 
 function loadWorld(levelId, options = {}) {
     const levelStatus = options.status ?? 'playing';
+    const selectedDifficulty = options.difficulty ?? gameState.difficulty;
 
     level = loadLevel(levelId);
     map = new GameMap(level);
     camera = new Camera(map, level.playerStart);
     raycaster = new Raycaster(map, SCREEN_WIDTH, SCREEN_HEIGHT);
-    entities = level.entities.map((entity) => new Enemy(entity.x, entity.y, entity.type, entity));
+
+    gameState.prepareLevel(level, {
+        preservePlayerState: options.preservePlayerState ?? true,
+        difficulty: selectedDifficulty,
+        enemiesTotal: level.entities.length,
+        pickupsTotal: level.pickups.length,
+        treasuresTotal: level.pickups.filter((pickup) => pickup.type === 'treasure').length,
+        secretsTotal: level.secrets.length,
+        status: levelStatus,
+    });
+
+    entities = level.entities.map((entity) => new Enemy(entity.x, entity.y, entity.type, entity, gameState));
     pickups = level.pickups.map(createRuntimePickup);
     props = level.props.map((prop) => ({ ...prop }));
     projectiles = [];
     secrets = level.secrets.map(createRuntimeSecret);
     nextProjectileId = 1;
-
-    gameState.prepareLevel(level, {
-        preservePlayerState: options.preservePlayerState ?? true,
-        enemiesTotal: entities.length,
-        pickupsTotal: pickups.length,
-        treasuresTotal: level.pickups.filter((pickup) => pickup.type === 'treasure').length,
-        secretsTotal: level.secrets.length,
-        status: levelStatus,
-    });
 
     camera.keys = gameState.keys;
     if (levelStatus === 'playing') {
@@ -200,6 +205,15 @@ function syncMusicForLevelStatus(previousStatus) {
     if (gameState.levelStatus === 'dead' || gameState.levelStatus === 'victory') {
         stopMusic();
     }
+}
+
+function getDifficultySettings() {
+    return DIFFICULTY[gameState?.difficulty] ?? DIFFICULTY.normal;
+}
+
+function applyEnemyDamage(amount) {
+    const scaledAmount = Math.max(1, Math.round(amount * getDifficultySettings().enemyDamageScale));
+    return gameState.applyDamage(scaledAmount);
 }
 
 function spawnProjectile(spec) {
@@ -461,7 +475,8 @@ function collectPickups() {
                 sound = 'weapon-pickup';
                 break;
             case 'ammo': {
-                const gained = gameState.addAmmo(pickup.amount);
+                const scaledAmmo = Math.max(1, Math.round(pickup.amount * getDifficultySettings().ammoScale));
+                const gained = gameState.addAmmo(scaledAmmo);
                 if (gained > 0) {
                     collected = true;
                     message = `AMMO +${gained}`;
@@ -581,7 +596,7 @@ function updateProjectiles(dt) {
                 const dy = projectile.y - camera.y;
                 const combinedRadius = (projectile.radius ?? 0.08) + (camera.radius ?? 0.2);
                 if ((dx * dx) + (dy * dy) <= combinedRadius * combinedRadius) {
-                    gameState.applyDamage(projectile.damage);
+                    applyEnemyDamage(projectile.damage);
                     projectile.dead = true;
                     break;
                 }
@@ -615,9 +630,21 @@ function advanceFlowIfNeeded() {
         return false;
     }
 
-    if (gameState.levelStatus === 'title' && input.consumeAnyPressed(START_KEYS)) {
-        startRun();
-        return true;
+    if (gameState.levelStatus === 'title') {
+        if (input.consumeAnyPressed(TITLE_UP_KEYS)) {
+            gameState.cycleDifficulty(-1);
+            return true;
+        }
+
+        if (input.consumeAnyPressed(TITLE_DOWN_KEYS)) {
+            gameState.cycleDifficulty(1);
+            return true;
+        }
+
+        if (input.consumeAnyPressed(START_KEYS)) {
+            startRun();
+            return true;
+        }
     }
 
     if (gameState.levelStatus === 'intermission' && input.consumeAnyPressed(START_KEYS)) {
@@ -676,6 +703,7 @@ function update(dt) {
 
     const healthBefore = gameState.health;
     const enemyContext = {
+        applyPlayerDamage: applyEnemyDamage,
         spawnProjectile,
         playSound,
     };

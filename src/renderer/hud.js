@@ -3,6 +3,7 @@
  */
 
 import { getWeapon, WEAPON_ORDER } from '../game/weapons.js';
+import { DIFFICULTY, DIFFICULTY_ORDER } from '../game/state.js';
 import { spriteGenerator } from '../sprites/SpriteGenerator.js';
 
 function formatKeys(keys) {
@@ -201,7 +202,7 @@ function drawCenteredPanel(ctx, canvasWidth, canvasHeight, width, height) {
 function drawTitleOverlay(ctx, canvasWidth, canvasHeight, gameState, level) {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    const panel = drawCenteredPanel(ctx, canvasWidth, canvasHeight, 430, 220);
+    const panel = drawCenteredPanel(ctx, canvasWidth, canvasHeight, 430, 314);
 
     drawSprite(ctx, 'ui_badge_title_0', panel.left + 334, panel.top + 18, 72, 72);
     ctx.fillStyle = '#fff1c0';
@@ -212,10 +213,23 @@ function drawTitleOverlay(ctx, canvasWidth, canvasHeight, gameState, level) {
     ctx.font = '13px monospace';
     ctx.fillStyle = '#d7d2c6';
     ctx.fillText(level?.metadata?.briefing ?? 'Begin the campaign run.', panel.left + 24, panel.top + 102);
-    ctx.fillText('WASD move  QE strafe  Space use  Ctrl/Enter fire', panel.left + 24, panel.top + 138);
-    ctx.fillText('1/2/3/4/5 switch weapon  Esc pause  H help  Enter start', panel.left + 24, panel.top + 160);
     ctx.fillStyle = '#fff1c0';
-    ctx.fillText('Query parameter `?level=` still works for direct starts.', panel.left + 24, panel.top + 194);
+    ctx.fillText('SELECT DIFFICULTY', panel.left + 24, panel.top + 132);
+    DIFFICULTY_ORDER.forEach((difficulty, index) => {
+        const selected = difficulty === gameState.difficulty;
+        ctx.fillStyle = selected ? '#fff6ce' : '#d7d2c6';
+        ctx.fillText(
+            `${selected ? '>' : ' '} ${DIFFICULTY[difficulty].label}`,
+            panel.left + 36,
+            panel.top + 156 + (index * 22)
+        );
+    });
+    ctx.fillStyle = '#d7d2c6';
+    ctx.fillText('Up/Down or W/S choose difficulty  Enter/Space deploy', panel.left + 24, panel.top + 224);
+    ctx.fillText('WASD move  QE strafe  Space use  Ctrl/Enter fire', panel.left + 24, panel.top + 246);
+    ctx.fillText('1/2/3/4/5 switch weapon  Esc pause  H help', panel.left + 24, panel.top + 268);
+    ctx.fillStyle = '#fff1c0';
+    ctx.fillText('Query parameter `?level=` still works for direct starts.', panel.left + 24, panel.top + 290);
 }
 
 function drawIntermissionOverlay(ctx, canvasWidth, canvasHeight, gameState) {

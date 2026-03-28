@@ -10,6 +10,14 @@ const MAX_AMMO = 99;
 const MAX_ARMOR = 100;
 const ARMOR_ABSORB_RATIO = 0.65;
 
+export const DIFFICULTY = {
+    easy: { label: 'Can I play, Daddy?', enemyHealthScale: 0.6, enemyDamageScale: 0.5, ammoScale: 1.5 },
+    normal: { label: 'Bring \'em on!', enemyHealthScale: 1.0, enemyDamageScale: 1.0, ammoScale: 1.0 },
+    hard: { label: 'I am Death incarnate!', enemyHealthScale: 1.4, enemyDamageScale: 1.5, ammoScale: 0.7 },
+};
+
+export const DIFFICULTY_ORDER = ['easy', 'normal', 'hard'];
+
 export class GameState {
     constructor() {
         this.resetRun();
@@ -26,13 +34,14 @@ export class GameState {
         this.clearLevelState();
     }
 
-    resetPlayerState() {
+    resetPlayerState(options = {}) {
         this.health = DEFAULT_HEALTH;
         this.armor = 0;
         this.ammo = DEFAULT_AMMO;
         this.weapon = DEFAULT_WEAPON;
         this.weapons = new Set(['knife', DEFAULT_WEAPON]);
         this.keys = new Set();
+        this.difficulty = options.difficulty ?? 'normal';
     }
 
     prepareRetryState() {
@@ -83,7 +92,7 @@ export class GameState {
         const preservePlayerState = options.preservePlayerState ?? true;
 
         if (!preservePlayerState) {
-            this.resetPlayerState();
+            this.resetPlayerState({ difficulty: options.difficulty ?? this.difficulty });
         }
 
         this.currentLevelId = level.id;
@@ -171,6 +180,26 @@ export class GameState {
         const before = this.ammo;
         this.ammo = Math.min(MAX_AMMO, this.ammo + amount);
         return this.ammo - before;
+    }
+
+    getDifficultyProfile() {
+        return DIFFICULTY[this.difficulty] ?? DIFFICULTY.normal;
+    }
+
+    setDifficulty(difficulty) {
+        if (!DIFFICULTY[difficulty]) {
+            return false;
+        }
+
+        this.difficulty = difficulty;
+        return true;
+    }
+
+    cycleDifficulty(step = 1) {
+        const currentIndex = Math.max(0, DIFFICULTY_ORDER.indexOf(this.difficulty));
+        const nextIndex = (currentIndex + step + DIFFICULTY_ORDER.length) % DIFFICULTY_ORDER.length;
+        this.difficulty = DIFFICULTY_ORDER[nextIndex];
+        return this.difficulty;
     }
 
     heal(amount) {
