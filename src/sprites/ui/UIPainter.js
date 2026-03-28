@@ -41,6 +41,7 @@ export class UIPainter extends SpritePainter {
         }
         if (key === 'ui_badge_title_0') {
             this.paintTitleBadge(ctx, width, height);
+            return;
         }
     }
 
