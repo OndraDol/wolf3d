@@ -15,8 +15,8 @@
 - [x] [M] GrayStone2Painter (Tile 4) — šedý kámen varianta `(deps: TexturePainter base class, TextureGenerator orchestrátor)`
 - [x] [M] MetalPanelPainter (Tile 5) — kovové panely `(deps: TexturePainter base class, TextureGenerator orchestrátor)`
 - [x] [M] OrnamentWallPainter (Tile 6) — vlajka/ornament `(deps: TexturePainter base class, TextureGenerator orchestrátor)`
-- [x] [S] PrisonBarsPainter (Tile 7) — mříže `(deps: TexturePainter base class, TextureGenerator orchestrátor)`
-- [ ] [S] CrackedStonePainter (Tile 8) — popraskané zdivo `(deps: TexturePainter base class, TextureGenerator orchestrátor)`
+- [x] [S] PrisonBarsPainter (Tile 8) — mříže `(deps: TexturePainter base class, TextureGenerator orchestrátor)`
+- [x] [S] CrackedStonePainter (Tile 9) — popraskané zdivo `(deps: TexturePainter base class, TextureGenerator orchestrátor)`
 - [x] [M] Integrace textur do rendereru (napojení na raycaster) `(deps: BrickWallPainter, BlueStonePainter, WoodPainter, GrayStone2Painter, MetalPanelPainter, OrnamentWallPainter, TextureGenerator orchestrátor)`
 
 ## Fáze 2: Dveře a speciální stěny
@@ -59,9 +59,15 @@
 - [x] [L] BJ Face painter — 3+ stavy zdraví, pain flash `(deps: SpritePainter base class, HUD layout — health, ammo, score, keys, face)`
 
 ## Fáze 6: Polish a efekty
-- [ ] [S] Distance fog (lineární fade k černé) `(deps: Integrace textur do rendereru)`
+- [x] [S] Distance fog (lineární fade k černé) `(deps: Integrace textur do rendereru)`
 - [x] [S] Hit flash (červený overlay při zásahu) `(deps: HUD layout — health, ammo, score, keys, face)`
 - [x] [S] Pickup flash (žlutý/bílý flash) `(deps: HUD layout — health, ammo, score, keys, face)`
 - [x] [M] Screen transitions (fade to black mezi levely) `(deps: HUD layout — health, ammo, score, keys, face)`
 - [x] [S] Death screen (červenání + pád kamery) `(deps: Hit flash (červený overlay při zásahu))`
 - [x] [M] Menu screen — title, start game, nová hra malovaná v Canvas 2D `(deps: HUD layout — health, ammo, score, keys, face, Screen transitions (fade to black mezi levely))`
+
+## Fáze 7: Dokončení epizody
+- [x] [L] Rozšíření Episode 1 na 10 pater (tutorial + e1m1 až e1m9) `(deps: Menu screen — title, start game, nová hra malovaná v Canvas 2D, Enemy animation state machine)`
+- [x] [S] Syntetizovaná ambientní hudba na pozadí `(deps: none)`
+- [x] [M] Volba obtížnosti (easy / normal / hard) `(deps: Menu screen — title, start game, nová hra malovaná v Canvas 2D)`
+- [x] [S] Fullscreen toggle z klávesnice `(deps: Menu screen — title, start game, nová hra malovaná v Canvas 2D)`
