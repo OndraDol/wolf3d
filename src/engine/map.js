@@ -99,6 +99,11 @@ export class GameMap {
         return tile >= DOOR_TILE_START && tile < DOOR_TILE_END;
     }
 
+    isDoorBlockingPath(tileX, tileY) {
+        const door = this.getDoorAt(tileX, tileY);
+        return door != null && door.open < 0.85;
+    }
+
     isSolidNeighbour(x, y) {
         const tile = this.getTile(x, y);
         return this.isWallTile(tile) || this.isDoorTile(tile);

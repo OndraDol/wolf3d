@@ -142,6 +142,7 @@ export class Enemy {
         this.painTimer = 0;
         this.deathTimer = 0;
         this.radius = this.archetype.radius;
+        this.spriteDirection = null;
         this.patrolPoints = options.patrolPoints?.length
             ? options.patrolPoints.map((point) => ({ x: point.x, y: point.y }))
             : [{ x, y }];

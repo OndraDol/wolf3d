@@ -99,7 +99,7 @@ export class TextureGenerator {
 
         const entry = this.registry.get(tileType);
         const painter = entry?.painter ?? this.fallbackPainter;
-        painter.paint(ctx, this.size, this.size, tileType);
+        painter.paint(ctx, this.size, this.size);
         const pixels = painter.exportToUint32Array(ctx, this.size, this.size);
         this.cache.set(tileType, pixels);
         return pixels;
