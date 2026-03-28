@@ -12,6 +12,7 @@ const TILE_SYMBOLS = {
     '=': 5,
     '!': 6,
     E: 7,
+    '|': 8,
 };
 
 const DOOR_SYMBOLS = {
@@ -189,7 +190,7 @@ const LEVEL_DATA = [
         layout: [
             '########',
             '#>.....#',
-            '#....%.#',
+            '#....|.#',
             '#......#',
             '#..+.D.#',
             '#......#',
@@ -430,6 +431,16 @@ const LEVEL_DATA = [
                     { x: 10.5, y: 9.5 },
                 ],
             },
+            {
+                id: 'reactor-dog',
+                type: 'dog',
+                x: 9.5,
+                y: 11.5,
+                patrolPoints: [
+                    { x: 9.5, y: 11.5 },
+                    { x: 7.5, y: 11.5 },
+                ],
+            },
         ],
         pickups: [
             { id: 'reactor-ammo-a', type: 'ammo', x: 5.5, y: 1.5, amount: 8 },
@@ -577,6 +588,7 @@ const LEVEL_DATA = [
             { id: 'command-gold-key', type: 'gold-key', x: 15.5, y: 7.5, amount: 1 },
             { id: 'command-ammo-b', type: 'ammo', x: 6.5, y: 11.5, amount: 8 },
             { id: 'command-silver-key', type: 'silver-key', x: 6.5, y: 15.5, amount: 1 },
+            { id: 'command-chaingun', type: 'chaingun', x: 4.5, y: 15.5, amount: 1 },
             { id: 'command-medkit-b', type: 'medkit', x: 12.5, y: 15.5, amount: 18 },
             { id: 'command-treasure-b', type: 'treasure', x: 14.5, y: 15.5, amount: 1, value: 600, label: 'COMMAND SEAL' },
             { id: 'command-rations', type: 'food', x: 8.5, y: 15.5, amount: 10 },

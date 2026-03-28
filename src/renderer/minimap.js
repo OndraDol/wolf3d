@@ -22,8 +22,10 @@ const COLORS = {
     goldKey: Screen.rgb(255, 204, 68),
     silverKey: Screen.rgb(206, 222, 246),
     shotgun: Screen.rgb(196, 142, 84),
+    weapon: Screen.rgb(216, 164, 92),
     officer: Screen.rgb(106, 188, 255),
     commander: Screen.rgb(255, 132, 84),
+    dog: Screen.rgb(182, 132, 84),
     projectile: Screen.rgb(72, 244, 255),
     armor: Screen.rgb(86, 146, 255),
     treasure: Screen.rgb(255, 222, 92),
@@ -98,6 +100,8 @@ function getTileColor(tileType) {
             return Screen.rgb(166, 46, 46);
         case 7:
             return Screen.rgb(204, 186, 92);
+        case 8:
+            return Screen.rgb(126, 126, 126);
         default:
             return Screen.rgb(184, 138, 52);
     }
@@ -116,6 +120,13 @@ function getEntityColor(entity) {
             return Screen.rgb(42, 82, 104);
         }
         return COLORS.officer;
+    }
+
+    if (entity.type === 'dog') {
+        if (entity.state === 'death') {
+            return Screen.rgb(96, 68, 44);
+        }
+        return COLORS.dog;
     }
 
     switch (entity.state) {
@@ -139,8 +150,12 @@ function getPickupColor(pickup) {
             return COLORS.goldKey;
         case 'silver-key':
             return COLORS.silverKey;
+        case 'knife':
+        case 'pistol':
         case 'shotgun':
-            return COLORS.shotgun;
+        case 'machinegun':
+        case 'chaingun':
+            return COLORS.weapon;
         case 'armor':
             return COLORS.armor;
         case 'treasure':

@@ -62,6 +62,12 @@ function createPulseSequence(notes, type = 'square', gainValue = 0.06) {
 export function playSound(name) {
     try {
         switch (name) {
+            case 'slash-knife':
+                createPulseSequence([
+                    { frequency: 460, length: 0.02 },
+                    { frequency: 220, length: 0.035 },
+                ], 'sawtooth', 0.045);
+                break;
             case 'shot-pistol':
                 createTone('square', 840, 180, 0.08, 0.11);
                 break;
@@ -77,6 +83,13 @@ export function playSound(name) {
                     { frequency: 520, length: 0.025 },
                     { frequency: 360, length: 0.03 },
                 ], 'square', 0.085);
+                break;
+            case 'shot-chaingun':
+                createPulseSequence([
+                    { frequency: 620, length: 0.02 },
+                    { frequency: 430, length: 0.02 },
+                    { frequency: 300, length: 0.025 },
+                ], 'square', 0.08);
                 break;
             case 'dry-fire':
                 createTone('square', 180, 120, 0.05, 0.04);

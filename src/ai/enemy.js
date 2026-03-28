@@ -54,6 +54,22 @@ const ENEMY_ARCHETYPES = {
             ttl: 3.2,
         },
     },
+    dog: {
+        id: 'dog',
+        health: 18,
+        speed: 1.32,
+        chaseSpeed: 2.3,
+        radius: 0.16,
+        aggroRange: 7.2,
+        retreatRange: 0,
+        attack: {
+            type: 'hitscan',
+            range: 1.12,
+            damage: 9,
+            cooldown: 0.62,
+            windup: 0.12,
+        },
+    },
     commander: {
         id: 'commander',
         health: 110,

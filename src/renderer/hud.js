@@ -48,18 +48,15 @@ function drawWeapon(ctx, canvasWidth, canvasHeight, gameState) {
     const weapon = getWeapon(gameState.weapon);
     const previousWeapon = getWeapon(gameState.weaponSwitchFrom ?? gameState.weapon);
     const bob = Math.sin(gameState.levelTime * 6) * 2;
-    const recoil = gameState.muzzleFlash > 0 ? -6 : 0;
     const switchProgress = gameState.weaponSwitchTimer > 0
         ? (gameState.weaponSwitchTimer / gameState.weaponSwitchDuration)
         : 0;
     const activeWeapon = switchProgress > 0.5 ? previousWeapon : weapon;
-    const activeRecoil = activeWeapon.id === weapon.id ? recoil : 0;
-    const width = activeWeapon.id === 'shotgun'
-        ? 164
-        : (activeWeapon.id === 'machinegun' ? 152 : 124);
-    const height = activeWeapon.id === 'shotgun'
-        ? 164
-        : (activeWeapon.id === 'machinegun' ? 146 : 132);
+    const activeRecoil = activeWeapon.id === weapon.id && gameState.muzzleFlash > 0
+        ? -(weapon.recoil ?? 6)
+        : 0;
+    const width = activeWeapon.viewWidth ?? 124;
+    const height = activeWeapon.viewHeight ?? 132;
     const slide = switchProgress > 0
         ? Math.sin((1 - switchProgress) * Math.PI) * 42
         : 0;
@@ -99,6 +96,7 @@ function drawTopStrip(ctx, canvasWidth, gameState, level) {
 
 function drawStatusBar(ctx, canvasWidth, canvasHeight, gameState, level) {
     const weapon = getWeapon(gameState.weapon);
+    const loadText = weapon.ammoCost > 0 ? String(weapon.ammoCost) : '--';
     const hudHeight = 64;
     const top = canvasHeight - hudHeight;
 
@@ -162,7 +160,7 @@ function drawStatusBar(ctx, canvasWidth, canvasHeight, gameState, level) {
 
     ctx.textAlign = 'right';
     ctx.fillText(weapon.label, canvasWidth - 12, top + 18);
-    ctx.fillText(`LOAD ${weapon.ammoCost}  SLOT ${weapon.slot}`, canvasWidth - 12, top + 36);
+    ctx.fillText(`LOAD ${loadText}  SLOT ${weapon.slot}`, canvasWidth - 12, top + 36);
     ctx.fillText(
         WEAPON_ORDER.map((weaponId) => {
             const current = weaponId === gameState.weapon ? '>' : ' ';
@@ -215,7 +213,7 @@ function drawTitleOverlay(ctx, canvasWidth, canvasHeight, gameState, level) {
     ctx.fillStyle = '#d7d2c6';
     ctx.fillText(level?.metadata?.briefing ?? 'Begin the campaign run.', panel.left + 24, panel.top + 102);
     ctx.fillText('WASD move  QE strafe  Space use  Ctrl/Enter fire', panel.left + 24, panel.top + 138);
-    ctx.fillText('1/2/3 switch weapon  Esc pause  H help  Enter start', panel.left + 24, panel.top + 160);
+    ctx.fillText('1/2/3/4/5 switch weapon  Esc pause  H help  Enter start', panel.left + 24, panel.top + 160);
     ctx.fillStyle = '#fff1c0';
     ctx.fillText('Query parameter `?level=` still works for direct starts.', panel.left + 24, panel.top + 194);
 }
@@ -289,7 +287,7 @@ function drawHelpOverlay(ctx, canvasWidth, canvasHeight, level) {
     ctx.fillText(level?.metadata?.primaryObjective ?? 'Reach the next lift.', panel.left + 20, panel.top + 68);
     ctx.fillText(`Bonus: ${level?.metadata?.bonusObjective ?? 'Explore side paths.'}`, panel.left + 20, panel.top + 92);
     ctx.fillText('WASD move  QE strafe  Space use/interact', panel.left + 20, panel.top + 124);
-    ctx.fillText('Ctrl/Enter/F fire  1/2/3 weapon switch', panel.left + 20, panel.top + 148);
+    ctx.fillText('Ctrl/Enter/F fire  1/2/3/4/5 weapon switch', panel.left + 20, panel.top + 148);
     ctx.fillText('Armor absorbs part of incoming damage.', panel.left + 20, panel.top + 172);
     ctx.fillText('Secrets and treasure boost score and intermission stats.', panel.left + 20, panel.top + 196);
     ctx.fillText('H or Esc closes this overlay.', panel.left + 20, panel.top + 220);
@@ -299,6 +297,7 @@ export function drawHUD(ctx, frame) {
     const { gameState, level } = frame;
     const canvasWidth = ctx.canvas.width;
     const canvasHeight = ctx.canvas.height;
+    const weapon = getWeapon(gameState.weapon);
 
     ctx.save();
 
@@ -314,7 +313,7 @@ export function drawHUD(ctx, frame) {
         ctx.fillStyle = `rgba(255, 240, 164, ${Math.min(0.22, gameState.pickupFlash)})`;
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     }
-    if (gameState.muzzleFlash > 0) {
+    if (gameState.muzzleFlash > 0 && weapon.screenFlash !== false) {
         ctx.fillStyle = `rgba(255, 226, 164, ${Math.min(0.18, gameState.muzzleFlash * 1.4)})`;
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     }

@@ -46,15 +46,15 @@ Nebo jednoduše otevři `index.html` přes libovolný local dev server.
 | Q / E | Strafe vlevo/vpravo |
 | Space | Použít dveře / exit / start / pokračovat |
 | Ctrl / Enter / F | Střelba |
-| 1 / 2 / 3 | Přepnutí zbraně |
+| 1 / 2 / 3 / 4 / 5 | Přepnutí zbraně |
 | R / Enter | Restart po smrti / po vítězství |
 
 ## Aktuální slice
 
 - Title/start shell a intermission flow mezi levely
 - Více propojených levelů (`e1m1-skeleton` -> `e1m2-reactor` -> `e1m3-command`)
-- Tři player weapons: pistol, shotgun a machinegun
-- Čtyři enemy archetypy: guard, projectile-firing officer, burst-firing commander a finální boss
+- Pět player weapons: knife, pistol, shotgun, machinegun a chaingun
+- Pět enemy archetypů: guard, melee dog, projectile-firing officer, burst-firing commander a finální boss
 - Canvas 2D painted wall textures, enemy sprites, dekorace, HUD a weapon view
 - Armor, treasure, food a secret cache loop v campaign levelech
 - Pause/help shell, doors, locks, keys, pickups, HUD, minimapa a syntetické audio

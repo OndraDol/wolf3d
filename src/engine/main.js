@@ -426,6 +426,16 @@ function collectPickups() {
         let sound = 'pickup';
 
         switch (pickup.type) {
+            case 'knife':
+                collected = gameState.unlockWeapon('knife');
+                message = collected ? 'KNIFE ACQUIRED' : '';
+                sound = 'weapon-pickup';
+                break;
+            case 'pistol':
+                collected = gameState.unlockWeapon('pistol');
+                message = collected ? 'PISTOL ACQUIRED' : '';
+                sound = 'weapon-pickup';
+                break;
             case 'ammo': {
                 const gained = gameState.addAmmo(pickup.amount);
                 if (gained > 0) {
@@ -458,6 +468,11 @@ function collectPickups() {
             case 'machinegun':
                 collected = gameState.unlockWeapon('machinegun');
                 message = collected ? 'MACHINEGUN ACQUIRED' : '';
+                sound = 'weapon-pickup';
+                break;
+            case 'chaingun':
+                collected = gameState.unlockWeapon('chaingun');
+                message = collected ? 'CHAINGUN ACQUIRED' : '';
                 sound = 'weapon-pickup';
                 break;
             case 'food': {
@@ -499,7 +514,10 @@ function collectPickups() {
         pickup.collected = true;
         gameState.registerPickup();
         gameState.triggerPickupFlash(pickup.type === 'treasure' ? 0.26 : 0.16);
-        gameState.setMessage(message, (pickup.type === 'shotgun' || pickup.type === 'machinegun') ? 1.4 : 1);
+        gameState.setMessage(
+            message,
+            ['knife', 'pistol', 'shotgun', 'machinegun', 'chaingun'].includes(pickup.type) ? 1.4 : 1
+        );
         playSound(sound);
     }
 }

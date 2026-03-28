@@ -31,7 +31,7 @@ export class GameState {
         this.armor = 0;
         this.ammo = DEFAULT_AMMO;
         this.weapon = DEFAULT_WEAPON;
-        this.weapons = new Set([DEFAULT_WEAPON]);
+        this.weapons = new Set(['knife', DEFAULT_WEAPON]);
         this.keys = new Set();
     }
 
