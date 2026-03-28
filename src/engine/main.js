@@ -222,7 +222,10 @@ function getExitInFront() {
         }
 
         const tile = map.getTile(sampleX, sampleY);
-        if (map.isWallTile(tile) && (tileX !== exitTileX || tileY !== exitTileY)) {
+        if (tileX === exitTileX && tileY === exitTileY) {
+            continue;
+        }
+        if (map.isWallTile(tile) || map.isDoorBlockingPath(tileX, tileY)) {
             return null;
         }
     }

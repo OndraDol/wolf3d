@@ -130,7 +130,17 @@ Postup:
 - Shadow fold: radiální gradient tmavší u krajů
 - Dirt pass: několik tmavších skvrn s `globalAlpha` 0.12
 
-#### Tile 7 — Vězeňské mříže overlay
+#### Tile 7 — Elevator Exit Panel
+Postup:
+- Base: vertikální gradient `#9AA2AC` → `#59616B`
+- Vnější rámeček: tmavý `#434951`, 8px padding
+- Vnitřní panel: `#7D848C`
+- Středová svislá spára: tmavá `#2C3138`, 4px
+- Šipky: 3 zlaté chevron šipky `#D2B24A` rozmístěné vertikálně
+- Nýty: 4 nýty v rozích
+- Noise: jemný surface noise ±3
+
+#### Tile 8 — Vězeňské mříže overlay
 Postup:
 - Base fill: špinavě šedý kámen `#4A4A4A`
 - Svislé mříže: 5–6 kovových prutů 4px širokých, `#7A7A7A`
@@ -138,15 +148,6 @@ Postup:
 - Highlight: levé hrany prutů zesvětlené na `#A0A0A0`
 - Shadow: pravé hrany prutů stažené do `#3A3A3A`
 - Pozadí za mříží: lehce ztmavený stone inset pro hloubku
-
-#### Tile 8 — Popraskaný kámen s břečťanem
-Postup:
-- Base fill: šedozelený kámen `#62685A`
-- Velké bloky: 14–24px bloky s nepravidelnými spárami `#44483D`
-- Praskliny: `Path2D` tenké linky 1px v barvě `#2F332B`
-- Břečťan: 2–3 popínavé větve, tmavě zelená `#2E5A34`, listy jako malé elipsy
-- Damp pass: spodní třetina o 10 % tmavší
-- Noise: jemný pixel jitter pro omšelý povrch
 
 ### Registr speciálních wall-face painterů (64–68)
 

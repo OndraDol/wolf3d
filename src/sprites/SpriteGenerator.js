@@ -27,10 +27,6 @@ function createRuntimeCanvas(width, height) {
     throw new Error('Canvas 2D sprite generation requires a browser Canvas context.');
 }
 
-function cloneBuffer(buffer) {
-    return new Uint32Array(buffer.buffer.slice(0));
-}
-
 export class SpriteGenerator {
     constructor(width = SPRITE_WIDTH, height = SPRITE_HEIGHT) {
         this.width = width;
@@ -108,7 +104,7 @@ export class SpriteGenerator {
         const pixels = this.paintSprite(key);
         const runtime = createRuntimeCanvas(this.width, this.height);
         const imageData = runtime.ctx.createImageData(this.width, this.height);
-        new Uint32Array(imageData.data.buffer).set(cloneBuffer(pixels));
+        new Uint32Array(imageData.data.buffer).set(pixels);
         runtime.ctx.putImageData(imageData, 0, 0);
         this.canvasCache.set(key, runtime.canvas);
         return runtime.canvas;
