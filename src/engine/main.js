@@ -3,7 +3,8 @@
  */
 
 import { Enemy } from '../ai/enemy.js';
-import { initAudio, playSound } from '../audio/synth.js';
+import { startMusic, stopMusic } from '../audio/music.js';
+import { getAudioContext, initAudio, playSound } from '../audio/synth.js';
 import { GameState } from '../game/state.js';
 import { getLevel, loadLevel } from '../game/level.js';
 import { getWeapon, getWeaponBySlot, WEAPON_ORDER } from '../game/weapons.js';
@@ -71,7 +72,10 @@ function getRequestedLevelId() {
 }
 
 function unlockAudio() {
-    initAudio();
+    const audioCtx = initAudio();
+    if (gameState?.levelStatus === 'playing') {
+        startMusic(audioCtx);
+    }
 }
 
 function createRuntimePickup(pickup) {
@@ -103,6 +107,8 @@ function syncRenderFrame() {
 }
 
 function loadWorld(levelId, options = {}) {
+    const levelStatus = options.status ?? 'playing';
+
     level = loadLevel(levelId);
     map = new GameMap(level);
     camera = new Camera(map, level.playerStart);
@@ -120,10 +126,15 @@ function loadWorld(levelId, options = {}) {
         pickupsTotal: pickups.length,
         treasuresTotal: level.pickups.filter((pickup) => pickup.type === 'treasure').length,
         secretsTotal: level.secrets.length,
-        status: options.status ?? 'playing',
+        status: levelStatus,
     });
 
     camera.keys = gameState.keys;
+    if (levelStatus === 'playing') {
+        startMusic(getAudioContext());
+    } else {
+        stopMusic();
+    }
     syncRenderFrame();
 }
 
@@ -179,6 +190,16 @@ function restartRun() {
 function restartFloor() {
     gameState.prepareRetryState();
     loadWorld(gameState.currentLevelId, { preservePlayerState: true, status: 'playing' });
+}
+
+function syncMusicForLevelStatus(previousStatus) {
+    if (gameState.levelStatus === previousStatus) {
+        return;
+    }
+
+    if (gameState.levelStatus === 'dead' || gameState.levelStatus === 'victory') {
+        stopMusic();
+    }
 }
 
 function spawnProjectile(spec) {
@@ -624,17 +645,21 @@ function advanceFlowIfNeeded() {
 
 function update(dt) {
     handleShellInput();
+    const statusBeforeUpdate = gameState.levelStatus;
     gameState.tick(dt);
 
     if (advanceFlowIfNeeded()) {
+        syncMusicForLevelStatus(statusBeforeUpdate);
         return;
     }
 
     if (gameState.isGameplayBlockedByOverlay()) {
+        syncMusicForLevelStatus(statusBeforeUpdate);
         return;
     }
 
     if (!gameState.canPlayerAct()) {
+        syncMusicForLevelStatus(statusBeforeUpdate);
         return;
     }
 
@@ -663,6 +688,7 @@ function update(dt) {
     }
 
     map.update(dt, camera, entities.filter((entity) => entity.isAlive()));
+    syncMusicForLevelStatus(statusBeforeUpdate);
 }
 
 function draw() {

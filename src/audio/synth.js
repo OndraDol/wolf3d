@@ -16,6 +16,10 @@ export function initAudio() {
     return audioCtx;
 }
 
+export function getAudioContext() {
+    return audioCtx ?? initAudio();
+}
+
 function createTone(type, startFrequency, endFrequency, duration, gainValue = 0.08) {
     const ctx = initAudio();
     const now = ctx.currentTime;
