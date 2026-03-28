@@ -57,6 +57,7 @@ export class GameState {
     clearLevelState() {
         this.currentLevelId = null;
         this.currentLevelName = '';
+        this.currentEpisodeNumber = 0;
         this.currentLevelNumber = 0;
         this.nextLevelId = null;
         this.pendingLevelId = null;
@@ -97,6 +98,7 @@ export class GameState {
 
         this.currentLevelId = level.id;
         this.currentLevelName = level.name;
+        this.currentEpisodeNumber = level.meta?.episode ?? 0;
         this.currentLevelNumber = level.meta?.floor ?? 0;
         this.nextLevelId = level.nextLevelId ?? null;
         this.pendingLevelId = null;
@@ -346,6 +348,7 @@ export class GameState {
         this.lastCompletedLevel = {
             id: this.currentLevelId,
             name: this.currentLevelName,
+            episode: this.currentEpisodeNumber,
             floor: this.currentLevelNumber,
             time: this.levelTime,
             kills: this.killsInLevel,
@@ -372,6 +375,6 @@ export class GameState {
 
         this.levelStatus = 'victory';
         this.transitionTimer = 0;
-        this.setMessage('MISSION COMPLETE', 3);
+        this.setMessage('CAMPAIGN COMPLETE', 3);
     }
 }

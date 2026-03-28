@@ -52,12 +52,12 @@ Nebo jednoduše otevři `index.html` přes libovolný local dev server.
 ## Aktuální slice
 
 - Title/start shell a intermission flow mezi levely
-- Více propojených levelů (`e1m1-skeleton` -> `e1m2-reactor` -> `e1m3-command`)
+- Dvou-episodní kampaň: tutorial + `e1m1-skeleton` až `e1m9-tower` + `e2m1-foundry` až `e2m9-stronghold`
 - Pět player weapons: knife, pistol, shotgun, machinegun a chaingun
 - Pět enemy archetypů: guard, melee dog, projectile-firing officer, burst-firing commander a finální boss
 - Canvas 2D painted wall textures, enemy sprites, dekorace, HUD a weapon view
 - Armor, treasure, food a secret cache loop v campaign levelech
-- Pause/help shell, doors, locks, keys, pickups, HUD, minimapa a syntetické audio
+- Pause/help shell, doors, locks, keys, pickups, HUD, minimapa, syntetické audio a finální campaign clear flow
 
 ## Struktura projektu
 

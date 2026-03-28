@@ -24,6 +24,23 @@ function formatTime(seconds) {
     return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
+function formatEpisodeFloor(episode, floor) {
+    if (episode <= 0) {
+        return 'TRAINING';
+    }
+
+    return `EP ${String(episode).padStart(2, '0')} // FLOOR ${String(floor).padStart(2, '0')}`;
+}
+
+function getCampaignBadge(level) {
+    const episode = level?.meta?.episode ?? 0;
+    if (episode <= 0) {
+        return 'WOLF3D // LAB';
+    }
+
+    return `WOLF3D // E${episode}`;
+}
+
 function drawSprite(ctx, key, x, y, width, height) {
     const sprite = spriteGenerator.paintSpriteCanvas(key);
     ctx.save();
@@ -116,7 +133,7 @@ function drawStatusBar(ctx, canvasWidth, canvasHeight, gameState, level) {
     ctx.font = 'bold 14px monospace';
     ctx.fillText(level?.name ?? 'WOLF3D', 12, top + 18);
     ctx.font = '12px monospace';
-    ctx.fillText(`FLOOR ${String(gameState.currentLevelNumber).padStart(2, '0')}`, 12, top + 36);
+    ctx.fillText(formatEpisodeFloor(gameState.currentEpisodeNumber, gameState.currentLevelNumber), 12, top + 36);
     ctx.fillText(`SCORE ${String(gameState.score).padStart(5, '0')}`, 12, top + 52);
 
     drawSprite(ctx, 'ui_stat_health_0', 100, top + 11, 18, 18);
@@ -207,7 +224,7 @@ function drawTitleOverlay(ctx, canvasWidth, canvasHeight, gameState, level) {
     drawSprite(ctx, 'ui_badge_title_0', panel.left + 334, panel.top + 18, 72, 72);
     ctx.fillStyle = '#fff1c0';
     ctx.font = 'bold 30px monospace';
-    ctx.fillText('WOLF3D // E1', panel.left + 24, panel.top + 42);
+    ctx.fillText(getCampaignBadge(level), panel.left + 24, panel.top + 42);
     ctx.font = 'bold 18px monospace';
     ctx.fillText(level?.name ?? 'START MISSION', panel.left + 24, panel.top + 74);
     ctx.font = '13px monospace';
@@ -240,26 +257,27 @@ function drawIntermissionOverlay(ctx, canvasWidth, canvasHeight, gameState) {
 
     ctx.fillStyle = 'rgba(0, 0, 0, 0.56)';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    const panel = drawCenteredPanel(ctx, canvasWidth, canvasHeight, 420, 228);
+    const panel = drawCenteredPanel(ctx, canvasWidth, canvasHeight, 420, 248);
 
     ctx.fillStyle = '#fff1c0';
     ctx.font = 'bold 26px monospace';
     ctx.fillText('FLOOR CLEAR', panel.left + 24, panel.top + 40);
     ctx.font = 'bold 16px monospace';
-    ctx.fillText(summary.name, panel.left + 24, panel.top + 70);
+    ctx.fillText(formatEpisodeFloor(summary.episode ?? 0, summary.floor ?? 0), panel.left + 24, panel.top + 70);
+    ctx.fillText(summary.name, panel.left + 24, panel.top + 92);
     ctx.font = '13px monospace';
     ctx.fillStyle = '#d7d2c6';
-    ctx.fillText(`TIME     ${formatTime(summary.time)}`, panel.left + 24, panel.top + 102);
-    ctx.fillText(`KILLS    ${summary.kills}/${summary.enemiesTotal}`, panel.left + 24, panel.top + 126);
-    ctx.fillText(`PICKUPS  ${summary.pickups}/${summary.pickupsTotal}`, panel.left + 24, panel.top + 150);
-    ctx.fillText(`HEALTH   ${summary.health}`, panel.left + 24, panel.top + 174);
-    ctx.fillText(`ARMOR    ${summary.armor}`, panel.left + 24, panel.top + 198);
-    ctx.fillText(`SCORE    ${summary.score}`, panel.left + 220, panel.top + 102);
-    ctx.fillText(`NEXT     ${gameState.pendingLevelName}`, panel.left + 220, panel.top + 126);
-    ctx.fillText(`SECRETS  ${summary.secrets}/${summary.secretsTotal}`, panel.left + 220, panel.top + 150);
-    ctx.fillText(`TREASURE ${summary.treasures}/${summary.treasuresTotal}`, panel.left + 220, panel.top + 174);
+    ctx.fillText(`TIME     ${formatTime(summary.time)}`, panel.left + 24, panel.top + 120);
+    ctx.fillText(`KILLS    ${summary.kills}/${summary.enemiesTotal}`, panel.left + 24, panel.top + 144);
+    ctx.fillText(`PICKUPS  ${summary.pickups}/${summary.pickupsTotal}`, panel.left + 24, panel.top + 168);
+    ctx.fillText(`HEALTH   ${summary.health}`, panel.left + 24, panel.top + 192);
+    ctx.fillText(`ARMOR    ${summary.armor}`, panel.left + 24, panel.top + 216);
+    ctx.fillText(`SCORE    ${summary.score}`, panel.left + 220, panel.top + 120);
+    ctx.fillText(`NEXT     ${gameState.pendingLevelName}`, panel.left + 220, panel.top + 144);
+    ctx.fillText(`SECRETS  ${summary.secrets}/${summary.secretsTotal}`, panel.left + 220, panel.top + 168);
+    ctx.fillText(`TREASURE ${summary.treasures}/${summary.treasuresTotal}`, panel.left + 220, panel.top + 192);
     ctx.fillStyle = '#fff1c0';
-    ctx.fillText('Press Enter to deploy to the next floor.', panel.left + 24, panel.top + 216);
+    ctx.fillText('Press Enter to deploy to the next floor.', panel.left + 24, panel.top + 232);
 }
 
 function drawEndOverlay(ctx, canvasWidth, canvasHeight, title, subtitle) {
@@ -346,7 +364,7 @@ export function drawHUD(ctx, frame) {
     } else if (gameState.levelStatus === 'dead') {
         drawEndOverlay(ctx, canvasWidth, canvasHeight, 'YOU DIED', 'Press Enter to restart the floor');
     } else if (gameState.levelStatus === 'victory') {
-        drawEndOverlay(ctx, canvasWidth, canvasHeight, 'EPISODE CLEAR', 'Press Enter to restart the campaign');
+        drawEndOverlay(ctx, canvasWidth, canvasHeight, 'CAMPAIGN CLEAR', 'Press Enter to restart from Episode 1');
     }
 
     if (gameState.paused) {

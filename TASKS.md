@@ -66,8 +66,9 @@
 - [x] [S] Death screen (červenání + pád kamery) `(deps: Hit flash (červený overlay při zásahu))`
 - [x] [M] Menu screen — title, start game, nová hra malovaná v Canvas 2D `(deps: HUD layout — health, ammo, score, keys, face, Screen transitions (fade to black mezi levely))`
 
-## Fáze 7: Dokončení epizody
+## Fáze 7: Dokončení kampaně
 - [x] [L] Rozšíření Episode 1 na 10 pater (tutorial + e1m1 až e1m9) `(deps: Menu screen — title, start game, nová hra malovaná v Canvas 2D, Enemy animation state machine)`
+- [x] [XL] Rozšíření kampaně o Episode 2 (e2m1 až e2m9, campaign clear až po e2m9) `(deps: Rozšíření Episode 1 na 10 pater (tutorial + e1m1 až e1m9))`
 - [x] [S] Syntetizovaná ambientní hudba na pozadí `(deps: none)`
 - [x] [M] Volba obtížnosti (easy / normal / hard) `(deps: Menu screen — title, start game, nová hra malovaná v Canvas 2D)`
 - [x] [S] Fullscreen toggle z klávesnice `(deps: Menu screen — title, start game, nová hra malovaná v Canvas 2D)`
