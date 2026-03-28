@@ -5,6 +5,7 @@ import { LockedDoorGoldPainter } from './doors/LockedDoorGoldPainter.js';
 import { LockedDoorSilverPainter } from './doors/LockedDoorSilverPainter.js';
 import { BlueStonePainter } from './walls/BlueStonePainter.js';
 import { BrickWallPainter } from './walls/BrickWallPainter.js';
+import { CrackedStonePainter } from './walls/CrackedStonePainter.js';
 import { ElevatorExitPainter } from './walls/ElevatorExitPainter.js';
 import { GrayStonePainter } from './walls/GrayStonePainter.js';
 import { MetalPanelPainter } from './walls/MetalPanelPainter.js';
@@ -60,6 +61,7 @@ export class TextureGenerator {
             [6, { label: 'Tile 6 — Ornament Wall', painter: new OrnamentWallPainter(), group: 'walls' }],
             [7, { label: 'Tile 7 — Elevator Exit Panel', painter: new ElevatorExitPainter(), group: 'walls' }],
             [8, { label: 'Tile 8 — Prison Bars', painter: new PrisonBarsPainter(), group: 'walls' }],
+            [9, { label: 'Tile 9 — Cracked Stone', painter: new CrackedStonePainter(), group: 'walls' }],
             [64, { label: 'Tile 64 — Standard Door', painter: new DoorPainter(), group: 'doors' }],
             [65, { label: 'Tile 65 — Gold Lock Door', painter: new LockedDoorGoldPainter(), group: 'doors' }],
             [66, { label: 'Tile 66 — Silver Lock Door', painter: new LockedDoorSilverPainter(), group: 'doors' }],
@@ -118,4 +120,3 @@ export class TextureGenerator {
 }
 
 export const textureGenerator = new TextureGenerator();
-
