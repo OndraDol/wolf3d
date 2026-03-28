@@ -1,4 +1,4 @@
-# CODEX.md — Instrukce pro ChatGPT Codex
+# CODEX.md — Instrukce pro Codex
 
 ## Projekt
 
@@ -6,8 +6,8 @@
 
 ### Klíčová podmínka
 
-**Veškerá grafika, textury, sprity a audio jsou generovány kódem.**
-Žádné externí obrázky, spritesheets, textury, audio soubory.
+Veškerá grafika, textury, sprity a audio jsou generovány kódem.
+Žádné externí obrázky, spritesheety, textury, audio soubory ani base64 assety.
 
 ## Tech Stack
 
@@ -20,44 +20,46 @@
 
 ```
 src/engine/      — raycasting, kamera, kolize, hlavní smyčka
-src/renderer/    — Canvas pixel rendering, stěny, sprity, HUD
+src/renderer/    — drawWalls, drawSprites, HUD, screen buffer
 src/game/        — herní logika, levely, zbraně
-src/ai/          — enemy AI, pathfinding
-src/procedural/  — generátor textur a geometrie
+src/ai/          — enemy AI, pathing, combat chování
 src/audio/       — Web Audio syntéza
-codex/experiments/ — Codex experimenty (tvůj workspace)
+src/textures/    — Canvas 2D wall/door paint pipeline
+src/sprites/     — Canvas 2D sprite/view-weapon paint pipeline
+codex/           — workspace a experimenty pro Codex
 ```
 
 ## Pravidla pro Codex
 
-### Kde pracuješ
-Codex pracuje v `codex/experiments/`. Hotové a otestované části navrhni
-přesunout do `src/` v DEVLOG.md.
+- Zachovej browser-only ES modules setup bez bundleru
+- Nepřidávej žádné externí assety ani build step
+- Když implementuješ grafiku, preferuj nové `Painter` classy místo hardcoded pixel arrays
+- Při větších změnách nejdřív čti aktuální stav repa, nepracuj z čisté teorie
+- Hotové změny ověřuj v debug view nebo jednoduchým smoke testem
 
-### Co NESMÍŠ měnit bez konzultace
-- `src/` — hlavní kód projektu (spravuje Claude)
-- `CLAUDE.md` — instrukce pro Claude
-- Cokoliv mimo `codex/` a `DEVLOG.md`
+## Grafický přístup — Canvas 2D Painting
 
-### Jak reportovat
-Výsledky zapisuj do `DEVLOG.md` jako nový záznam s datem.
-Zaznamenej co jsi implementoval, co funguje, co ne.
+Všechny textury a sprity jsou malovány pomocí Canvas 2D API na offscreen canvas.
+Žádné externí soubory, žádné base64 obrázky, žádné hardcoded pixel arrays.
 
-### Jak číst referenční materiály
-Referenční repozitáře jsou v `reference/` (gitignored, necommitují se):
-- `reference/wolf3d-original/WOLFSRC/` — originální C kód
-- `reference/wolf3d-html5/js/` — Seidelin HTML5 port
-- `reference/wolf3d-vpoupet/js/` — vpoupet JS přepis
-- `reference/html5-raycast/` — Lim Canvas raycaster
+Každá textura nebo sprite má vlastní Painter třídu s metodou `paint(ctx, w, h)`.
 
-### Konvence
-- ES modules (`import`/`export`)
-- Komentáře v češtině jsou OK
-- Žádné externí soubory — vše v kódu
-- Nikdy nepřidávej obrázky, textury, audio soubory
+Při implementaci nového Painteru:
+1. Podívej se na referenci originálu a na popis v `ARCHITECTURE.md`
+2. Rozlož obraz na vrstvy: base fill → hlavní tvary → detaily → noise/AO
+3. Implementuj vrstvu po vrstvě
+4. Používej helper metody z base class (`addNoise`, `addAO`, `jitterColor`, `drawBrick`, ...)
+5. Testuj v debug view
+6. Iteruj dokud výsledek vizuálně neodpovídá cíli
 
-## Aktuální stav
+Priorita při malování:
+- Silueta a proporce > barvy > detaily > noise
+- Originalita vzhledu > pixel-perfect kopie
+- Čitelnost na 64×64 > realismus
 
-Viz `PROGRESS.md` pro kompletní checklist a `CLAUDE.md` sekci "Aktuální stav".
+## Reference
 
-Setup je hotový. Základní DDA raycaster implementován. Další krok: vykreslování stěn.
+- `ARCHITECTURE.md` — technický popis pipeline, tile registr, sprite plány
+- `TASKS.md` — aktuální task list a závislosti
+- `TIMELINE.md` — sprint plán
+- `CLAUDE.md` — paralelní instrukce pro Claude Code

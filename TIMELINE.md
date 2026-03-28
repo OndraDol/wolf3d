@@ -1,129 +1,51 @@
-# TIMELINE.md — Sprinty a milestones
+# TIMELINE.md — Canvas 2D Painting Pipeline
 
-## Sprint 1: Viditelný raycaster
-**Cíl**: Pohyb po mapě s vykreslenými stěnami na obrazovce.
+### Sprint 1 (Týden 1–2): Foundation + První textury
+- TexturePainter/SpritePainter base classy
+- Generator orchestrátory + cache systém
+- Debug view stránky
+- První 3 stěnové textury (brick, stone, wood)
+- Integrace do rendereru
 
-- [x] Canvas setup, render loop, FPS
-- [x] DDA raycasting základ
-- [x] Kamera s pohybem a kolizemi
-- [ ] Vykreslování stěn (barevné sloupce z distance)
-- [ ] N/S vs E/W shading
-- [ ] Podlaha/strop barvy
-- [ ] Minimap pro debugging
+Milestone: Hra renderuje 3 různé malované textury místo jednobarevných stěn
 
-**Milestone**: *Hráč se pohybuje po mapě a vidí 3D stěny.*
+### Sprint 2 (Týden 3–4): Zbylé textury + Dveře
+- Zbylých 5+ stěnových textur
+- Všechny typy dveří
+- Elevator + secret wall
+- Iterativní ladění kvality (vizuální porovnání s originálem)
 
----
+Milestone: Kompletní stěnový a dveřní tileset
 
-## Sprint 2: Procedurální textury
-**Cíl**: Stěny mají různé texturové vzory generované kódem.
+### Sprint 3 (Týden 5–6): Statické sprity + Pickupy
+- Všechny pickup sprity
+- Dekorace
+- Sprite rendering engine (billboard, z-clip)
+- Integrace do herní mapy
 
-- [ ] Texture mapping (wallX → texel column)
-- [ ] Generátor: cihly, kámen, dřevo
-- [ ] Distance shading
-- [ ] Větší testovací mapa
+Milestone: Levelový prostor vypadá plně vybavený
 
-**Milestone**: *Mapa s různými texturami stěn, vše z kódu.*
+### Sprint 4 (Týden 7–10): Enemy sprity (hlavní práce)
+- Guard kompletní sprite sheet (všechny stavy × směry)
+- SS kompletní sprite sheet
+- Dog sprite sheet
+- Enemy animation + directional sprite selection
+- Iterativní ladění (nejvíce času zde)
 
----
+Milestone: Nepřátelé vizuálně odpovídají originálu
 
-## Sprint 3: Mapy a dveře
-**Cíl**: Level E1M1 z originálu, funkční dveře.
+### Sprint 5 (Týden 11–12): Zbraně + HUD + Boss
+- First-person zbraně (4 typy + animace)
+- HUD komplet
+- BJ face
+- Boss sprite sheet
 
-- [ ] Level E1M1 tile data
-- [ ] Dveře — otevírání, zavírání, kolize
-- [ ] Zamčené dveře + klíče
-- [ ] Push walls (tajné místnosti)
-- [ ] Level přechod (výtah)
+Milestone: Plně hratelná verze s kompletní grafikou
 
-**Milestone**: *Průchod E1M1 — dveře, tajné stěny, výtah.*
+### Sprint 6 (Týden 13–14): Polish
+- Efekty (fog, flash, transitions)
+- Menu screen
+- Finální visual QA pass
+- Performance optimalizace
 
----
-
-## Sprint 4: Nepřátelé — vizuál
-**Cíl**: Nepřátelé viditelní na mapě jako procedurální billboard tvary.
-
-- [ ] Billboard rendering systém
-- [ ] Procedurální geometrie (guard, SS, dog)
-- [ ] Z-sorting + depth clipping
-- [ ] Spawn z mapy
-
-**Milestone**: *Nepřátelé viditelní v levelech jako geometrické tvary.*
-
----
-
-## Sprint 5: Nepřátelé — AI
-**Cíl**: Nepřátelé se pohybují, pronásledují a útočí.
-
-- [ ] State machine (stand, patrol, chase, attack, pain, death)
-- [ ] Line-of-sight detekce
-- [ ] Greedy pathfinding
-- [ ] Damage systém
-
-**Milestone**: *Nepřátelé reagují na hráče, pronásledují ho, střílejí.*
-
----
-
-## Sprint 6: Zbraně a combat
-**Cíl**: Hráč může střílet a zabíjet nepřátele.
-
-- [ ] Procedurální zbraně na HUD
-- [ ] Hit-scan střelba
-- [ ] Animace střelby
-- [ ] 4 typy zbraní
-- [ ] Zdraví, smrt, restart
-
-**Milestone**: *Plně funkční combat — střílet, zabíjet, umírat.*
-
----
-
-## Sprint 7: HUD a UI
-**Cíl**: Kompletní herní UI.
-
-- [ ] Status bar (zdraví, munice, tvář, score)
-- [ ] Procedurální BJ face
-- [ ] Menu systém (main, pause, game over)
-- [ ] Pickup systém (munice, zdraví, klíče, treasures)
-
-**Milestone**: *Hra vypadá jako kompletní Wolf3D s HUD a menu.*
-
----
-
-## Sprint 8: Audio
-**Cíl**: Zvuky z Web Audio API.
-
-- [ ] Syntéza zvuků (střelba, kroky, dveře, nepřátelé)
-- [ ] 3D positioning (stereo pan)
-- [ ] Ambient
-
-**Milestone**: *Hra má zvukový doprovod generovaný kódem.*
-
----
-
-## Sprint 9: Levely a polish
-**Cíl**: Celá epizoda 1 (10 levelů).
-
-- [ ] E1M2 – E1M10
-- [ ] Boss fight (Hans Grosse)
-- [ ] Tajný level E1M9
-- [ ] Score systém + end-level stats
-
-**Milestone**: *Kompletní Epizoda 1 hratelná od začátku do konce.*
-
----
-
-## Sprint 10: Deploy a polish
-**Cíl**: Publikace na GitHub Pages.
-
-- [ ] Performance optimalizace
-- [ ] Cross-browser testing
-- [ ] Mobile touch controls
-- [ ] GitHub Pages deploy
-- [ ] Save/load (localStorage)
-
-**Milestone**: *Hra live na webu, hratelná na desktopu i mobilu.*
-
----
-
-## Buffer sprint
-Rezerva pro neočekávané problémy, performance issues, refactoring.
+Milestone: Release-ready grafika
