@@ -13,6 +13,7 @@ const TILE_SYMBOLS = {
     '!': 6,
     E: 7,
     '|': 8,
+    P: 50,  // Push wall (secret wall) — looks like tile 1 but slides when activated
 };
 
 const DOOR_SYMBOLS = {
@@ -188,14 +189,15 @@ const LEVEL_DATA = [
         },
         nextLevelId: 'e1m1-skeleton',
         layout: [
-            '########',
-            '#>.....#',
-            '#....|.#',
-            '#......#',
-            '#..+.D.#',
-            '#......#',
-            '#....E.#',
-            '########',
+            '##########',
+            '#>.......#',
+            '#....|...#',
+            '#........#',
+            '#..+.D...#',
+            '#......P.#',
+            '#.......##',
+            '#....E..##',
+            '##########',
         ],
         entities: [
             {

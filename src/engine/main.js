@@ -109,7 +109,11 @@ function loadWorld(levelId, options = {}) {
     map = new GameMap(level);
     camera = new Camera(map, level.playerStart);
     raycaster = new Raycaster(map, SCREEN_WIDTH, VIEWPORT_HEIGHT);
-    entities = level.entities.map((entity) => new Enemy(entity.x, entity.y, entity.type, entity));
+    entities = level.entities.map((entity) => new Enemy(entity.x, entity.y, entity.type, {
+        ...entity,
+        healthMultiplier: gameState.getDifficultyHealthMultiplier(),
+        damageMultiplier: gameState.getDifficultyDamageMultiplier(),
+    }));
     pickups = level.pickups.map(createRuntimePickup);
     props = level.props.map((prop) => ({ ...prop }));
     projectiles = [];
@@ -250,6 +254,23 @@ function handleInteraction() {
         return;
     }
 
+    // Try to activate push wall (secret wall)
+    const dirX = Math.cos(camera.angle);
+    const dirY = Math.sin(camera.angle);
+    for (let dist = 0.3; dist <= 1.2; dist += 0.1) {
+        const tx = Math.floor(camera.x + dirX * dist);
+        const ty = Math.floor(camera.y + dirY * dist);
+        const tile = map.getTile(tx, ty);
+        if (map.isPushWallTile(tile)) {
+            if (map.activatePushWall(tx, ty, camera.x, camera.y)) {
+                playSound('secret');
+                gameState.registerSecret(200);
+            }
+            return;
+        }
+        if (map.isWallTile(tile)) break;
+    }
+
     if (getExitInFront()) {
         if (level.exit?.requiresKillTypes?.length) {
             const remaining = entities.filter(
@@ -375,10 +396,15 @@ function handleShellInput() {
         const helpOpen = gameState.toggleHelp();
         gameState.setMessage(helpOpen ? 'HELP' : 'BACK TO RUN', 0.6);
     }
+
+    if (input.consumePressed('KeyM') || input.consumePressed('Tab')) {
+        gameState.showMinimap = !gameState.showMinimap;
+    }
 }
 
 function handleWeaponFire() {
-    if (!input.consumeAnyPressed(FIRE_KEYS)) {
+    // Auto-fire: hold fire button for continuous shooting (original Wolf3D behavior)
+    if (!FIRE_KEYS.some((k) => input.isDown(k))) {
         return;
     }
 
@@ -752,7 +778,9 @@ function draw() {
     raycaster.castRays(camera);
     drawWalls(screen, renderFrame);
     drawSprites(screen, renderFrame);
-    drawMinimap(screen, renderFrame);
+    if (gameState.showMinimap) {
+        drawMinimap(screen, renderFrame);
+    }
     screen.present();
     drawHUD(screen.ctx, renderFrame);
 }

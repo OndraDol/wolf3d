@@ -68,6 +68,7 @@ export class GameState {
         this.screenFade = 0;
         this.paused = false;
         this.showHelp = false;
+        this.showMinimap = false;
         this.levelTime = 0;
         this.enemiesTotal = 0;
         this.killsInLevel = 0;
@@ -139,6 +140,24 @@ export class GameState {
         }
     }
 
+    getDifficultyDamageMultiplier() {
+        return [0.5, 0.75, 1.0, 1.5][this.difficulty] ?? 1.0;
+    }
+
+    getDifficultyHealthMultiplier() {
+        return [0.75, 1.0, 1.25, 1.5][this.difficulty] ?? 1.0;
+    }
+
+    addScore(amount) {
+        const before = Math.floor(this.score / 40000);
+        this.score += amount;
+        const after = Math.floor(this.score / 40000);
+        if (after > before) {
+            this.lives += 1;
+            this.extraLifeAwarded = true;
+        }
+    }
+
     canPlayerAct() {
         return this.levelStatus === 'playing'
             && this.health > 0
@@ -193,7 +212,7 @@ export class GameState {
 
     addKey(keyType) {
         this.keys.add(keyType);
-        this.score += 500;
+        this.addScore(500);
     }
 
     hasKey(keyType) {
@@ -235,24 +254,24 @@ export class GameState {
     registerKill() {
         this.kills += 1;
         this.killsInLevel += 1;
-        this.score += 100;
+        this.addScore(100);
     }
 
     registerPickup() {
         this.pickupsCollected += 1;
-        this.score += 50;
+        this.addScore(50);
     }
 
     registerTreasure(value = 100) {
         this.treasures += 1;
         this.treasuresInLevel += 1;
-        this.score += value;
+        this.addScore(value);
     }
 
     registerSecret(value = 150) {
         this.secrets += 1;
         this.secretsInLevel += 1;
-        this.score += value;
+        this.addScore(value);
     }
 
     unlockWeapon(weaponId) {
@@ -262,7 +281,7 @@ export class GameState {
             this.weaponSwitchFrom = this.weapon;
             this.weapon = weaponId;
             this.weaponSwitchTimer = this.weaponSwitchDuration;
-            this.score += 250;
+            this.addScore(250);
         }
         return !hadWeapon;
     }

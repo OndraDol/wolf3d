@@ -740,8 +740,7 @@ export function drawHUD(ctx, frame) {
         ctx.fillRect(0, 0, canvasWidth, VIEWPORT_HEIGHT);
     }
 
-    // Crosshair in viewport
-    drawCrosshair(ctx, canvasWidth, gameState);
+    // No crosshair — original Wolf3D had none
 
     // Weapon view — clipped to viewport area (above status bar)
     ctx.save();
@@ -754,8 +753,7 @@ export function drawHUD(ctx, frame) {
     // Status bar — always on top
     drawStatusBar(ctx, canvasWidth, canvasHeight, gameState);
 
-    // Toast message
-    drawToast(ctx, canvasWidth, gameState);
+    // No toast messages — original Wolf3D had none
 
     // Overlay screens
     if (gameState.levelStatus === 'title') {

@@ -130,7 +130,9 @@ export class Enemy {
         this.type = type;
         this.archetype = getEnemyArchetype(type);
         this.state = EnemyState.STAND;
-        this.health = this.archetype.health;
+        const healthMult = options.healthMultiplier ?? 1;
+        this.health = Math.round(this.archetype.health * healthMult);
+        this.damageMultiplier = options.damageMultiplier ?? 1;
         this.speed = this.archetype.speed;
         this.chaseSpeed = this.archetype.chaseSpeed;
         this.angle = options.angle ?? 0;
@@ -289,7 +291,7 @@ export class Enemy {
         if (attack.type === 'burst') {
             const totalDamage = this.performBurstAttack(player, attack);
             if (totalDamage > 0) {
-                gameState?.applyDamage(totalDamage);
+                gameState?.applyDamage(Math.round(totalDamage * this.damageMultiplier));
             }
             context.playSound?.('enemy-shot');
             return;
@@ -308,14 +310,14 @@ export class Enemy {
                 speed: attack.projectileSpeed,
                 radius: attack.projectileRadius,
                 ttl: attack.ttl,
-                damage: attack.damage,
+                damage: Math.round(attack.damage * this.damageMultiplier),
                 sourceId: this.id,
             });
             context.playSound?.('enemy-shot');
             return;
         }
 
-        const damage = attack.damage + Math.round(Math.random() * 3);
+        const damage = Math.round((attack.damage + Math.round(Math.random() * 3)) * this.damageMultiplier);
         gameState?.applyDamage(clamp(damage, 1, 99));
     }
 

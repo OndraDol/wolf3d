@@ -65,6 +65,7 @@ export class TextureGenerator {
             [66, { label: 'Tile 66 — Silver Lock Door', painter: new LockedDoorSilverPainter(), group: 'doors' }],
             [67, { label: 'Tile 67 — Elevator Door', painter: new ElevatorDoorPainter(), group: 'doors' }],
             [68, { label: 'Tile 68 — Elevator Switch', painter: new ElevatorSwitchPainter(), group: 'doors' }],
+            [50, { label: 'Tile 50 — Push Wall (secret)', painter: new BrickWallPainter(), group: 'walls' }],
         ]);
     }
 

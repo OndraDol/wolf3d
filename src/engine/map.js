@@ -9,6 +9,11 @@ const DEFAULT_MAP = [
     [1, 1, 1, 1],
 ];
 
+const PUSH_WALL_TILE_START = 50;
+const PUSH_WALL_TILE_END = 64;
+const PUSH_WALL_SPEED = 0.8;
+const PUSH_WALL_SLIDE_DISTANCE = 2; // slides 2 tiles back
+
 const DOOR_TILE_START = 64;
 const DOOR_TILE_END = 100;
 const DOOR_OPEN_SPEED = 1.8;
@@ -38,8 +43,11 @@ export class GameMap {
         this.width = this.tiles[0].length;
         this.doors = [];
         this.doorLookup = new Map();
+        this.pushWalls = [];
+        this.pushWallLookup = new Map();
 
         this.initDoors(source.doors ?? []);
+        this.initPushWalls();
     }
 
     initDoors(doorDefinitions) {
@@ -58,6 +66,98 @@ export class GameMap {
                 }
             }
         }
+    }
+
+    initPushWalls() {
+        for (let y = 0; y < this.height; y++) {
+            for (let x = 0; x < this.width; x++) {
+                const tile = this.tiles[y][x];
+                if (this.isPushWallTile(tile)) {
+                    this.registerPushWall(x, y, tile);
+                }
+            }
+        }
+    }
+
+    registerPushWall(x, y, tile) {
+        const state = {
+            x, y, tile,
+            originalX: x, originalY: y,
+            open: 0,         // 0 = closed, 1+ = fully open (slides PUSH_WALL_SLIDE_DISTANCE tiles)
+            direction: 0,    // 0 = inactive, 1 = sliding
+            slideX: 0,       // slide direction X (-1, 0, 1)
+            slideY: 0,       // slide direction Y (-1, 0, 1)
+            activated: false,
+        };
+        const key = this.getDoorKey(x, y);
+        this.pushWalls.push(state);
+        this.pushWallLookup.set(key, state);
+    }
+
+    isPushWallTile(tile) {
+        return tile >= PUSH_WALL_TILE_START && tile < PUSH_WALL_TILE_END;
+    }
+
+    getPushWallAt(x, y) {
+        return this.pushWallLookup.get(this.getDoorKey(x, y)) ?? null;
+    }
+
+    activatePushWall(tileX, tileY, playerX, playerY) {
+        const pw = this.getPushWallAt(tileX, tileY);
+        if (!pw || pw.activated) return false;
+
+        // Determine slide direction: away from player
+        const dx = tileX + 0.5 - playerX;
+        const dy = tileY + 0.5 - playerY;
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+            pw.slideX = dx > 0 ? 1 : -1;
+            pw.slideY = 0;
+        } else {
+            pw.slideX = 0;
+            pw.slideY = dy > 0 ? 1 : -1;
+        }
+
+        // Check if destination tiles are free
+        for (let i = 1; i <= PUSH_WALL_SLIDE_DISTANCE; i++) {
+            const checkX = tileX + pw.slideX * i;
+            const checkY = tileY + pw.slideY * i;
+            const checkTile = this.getTile(checkX, checkY);
+            if (checkTile !== 0) return false; // blocked
+        }
+
+        pw.activated = true;
+        pw.direction = 1;
+        return true;
+    }
+
+    updatePushWalls(dt) {
+        for (const pw of this.pushWalls) {
+            if (pw.direction === 0) continue;
+
+            pw.open += dt * PUSH_WALL_SPEED;
+            if (pw.open >= PUSH_WALL_SLIDE_DISTANCE) {
+                pw.open = PUSH_WALL_SLIDE_DISTANCE;
+                pw.direction = 0;
+                // Clear original tile, set destination tile
+                this.tiles[pw.originalY][pw.originalX] = 0;
+                const destX = pw.originalX + pw.slideX * PUSH_WALL_SLIDE_DISTANCE;
+                const destY = pw.originalY + pw.slideY * PUSH_WALL_SLIDE_DISTANCE;
+                if (destX >= 0 && destX < this.width && destY >= 0 && destY < this.height) {
+                    this.tiles[destY][destX] = pw.tile;
+                }
+            }
+        }
+    }
+
+    getPushWallOffset(x, y) {
+        const pw = this.getPushWallAt(x, y);
+        if (!pw || !pw.activated || pw.open >= PUSH_WALL_SLIDE_DISTANCE) return null;
+        return {
+            offsetX: pw.slideX * pw.open,
+            offsetY: pw.slideY * pw.open,
+            tile: pw.tile,
+        };
     }
 
     registerDoor(x, y, tile, lock) {
@@ -236,6 +336,13 @@ export class GameMap {
         const tile = this.getTile(tileX, tileY);
 
         if (this.isWallTile(tile)) {
+            // Push wall that's sliding: use offset position for collision
+            const pwOffset = this.getPushWallOffset(tileX, tileY);
+            if (pwOffset) {
+                const ox = tileX + pwOffset.offsetX;
+                const oy = tileY + pwOffset.offsetY;
+                return circleIntersectsRect(centerX, centerY, radius, ox, oy, ox + 1, oy + 1);
+            }
             return circleIntersectsRect(centerX, centerY, radius, tileX, tileY, tileX + 1, tileY + 1);
         }
 
@@ -356,5 +463,7 @@ export class GameMap {
                 door.direction = 0;
             }
         }
+
+        this.updatePushWalls(dt);
     }
 }
