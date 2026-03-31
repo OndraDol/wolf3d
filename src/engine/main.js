@@ -421,10 +421,15 @@ function handleShellInput() {
         const helpOpen = gameState.toggleHelp();
         gameState.setMessage(helpOpen ? 'HELP' : 'BACK TO RUN', 0.6);
     }
+
+    if (input.consumePressed('KeyM') || input.consumePressed('Tab')) {
+        gameState.showMinimap = !gameState.showMinimap;
+    }
 }
 
 function handleWeaponFire() {
-    if (!input.consumeAnyPressed(FIRE_KEYS)) {
+    // Auto-fire: hold fire button for continuous shooting (original Wolf3D)
+    if (!FIRE_KEYS.some((k) => input.isDown(k))) {
         return;
     }
 
@@ -738,7 +743,9 @@ function draw() {
     raycaster.castRays(camera);
     drawWalls(screen, renderFrame);
     drawSprites(screen, renderFrame);
-    drawMinimap(screen, renderFrame);
+    if (gameState.showMinimap) {
+        drawMinimap(screen, renderFrame);
+    }
     screen.present();
     drawHUD(screen.ctx, renderFrame);
 }

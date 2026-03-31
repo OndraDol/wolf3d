@@ -351,11 +351,11 @@ export function drawHUD(ctx, frame) {
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     }
 
-    drawCrosshair(ctx, canvasWidth, canvasHeight, gameState);
+    // No crosshair — original Wolf3D had none
     drawTopStrip(ctx, canvasWidth, gameState, level);
     drawStatusBar(ctx, canvasWidth, canvasHeight, gameState, level);
     drawWeapon(ctx, canvasWidth, canvasHeight, gameState);
-    drawToast(ctx, canvasWidth, gameState);
+    // No toast messages — original Wolf3D had none
 
     if (gameState.levelStatus === 'title') {
         drawTitleOverlay(ctx, canvasWidth, canvasHeight, gameState, level);
