@@ -591,13 +591,85 @@ function discoverSecrets() {
     }
 }
 
+function handleMenuInput() {
+    const MENU_ITEMS = 4; // New Game, Difficulty, Help, Quit (placeholder)
+
+    if (input.consumePressed('ArrowUp') || input.consumePressed('KeyW')) {
+        gameState.menuCursor = (gameState.menuCursor - 1 + MENU_ITEMS) % MENU_ITEMS;
+        playSound('pickup');
+    }
+    if (input.consumePressed('ArrowDown') || input.consumePressed('KeyS')) {
+        gameState.menuCursor = (gameState.menuCursor + 1) % MENU_ITEMS;
+        playSound('pickup');
+    }
+    if (input.consumeAnyPressed(START_KEYS)) {
+        switch (gameState.menuCursor) {
+            case 0: // New Game → difficulty select
+                gameState.levelStatus = 'difficulty';
+                gameState.menuCursor = gameState.difficulty;
+                playSound('door');
+                break;
+            case 1: // Difficulty (shortcut)
+                gameState.levelStatus = 'difficulty';
+                gameState.menuCursor = gameState.difficulty;
+                playSound('door');
+                break;
+            case 2: // Help
+                gameState.showHelp = true;
+                break;
+            case 3: // Back to title
+                gameState.levelStatus = 'title';
+                break;
+        }
+    }
+    if (input.consumePressed('Escape')) {
+        gameState.levelStatus = 'title';
+    }
+}
+
+function handleDifficultyInput() {
+    const DIFFICULTIES = 4;
+
+    if (input.consumePressed('ArrowUp') || input.consumePressed('KeyW')) {
+        gameState.menuCursor = (gameState.menuCursor - 1 + DIFFICULTIES) % DIFFICULTIES;
+        playSound('pickup');
+    }
+    if (input.consumePressed('ArrowDown') || input.consumePressed('KeyS')) {
+        gameState.menuCursor = (gameState.menuCursor + 1) % DIFFICULTIES;
+        playSound('pickup');
+    }
+    if (input.consumeAnyPressed(START_KEYS)) {
+        gameState.difficulty = gameState.menuCursor;
+        startRun();
+        playSound('start-game');
+    }
+    if (input.consumePressed('Escape')) {
+        gameState.levelStatus = 'menu';
+        gameState.menuCursor = 0;
+    }
+}
+
 function advanceFlowIfNeeded() {
     if (gameState.showHelp || gameState.paused) {
         return false;
     }
 
-    if (gameState.levelStatus === 'title' && input.consumeAnyPressed(START_KEYS)) {
-        startRun();
+    if (gameState.levelStatus === 'title') {
+        if (input.consumeAnyPressed(START_KEYS) || input.consumeAnyPressed(FIRE_KEYS)) {
+            gameState.levelStatus = 'menu';
+            gameState.menuCursor = 0;
+            playSound('door');
+        }
+        return true;
+    }
+
+    if (gameState.levelStatus === 'menu') {
+        handleMenuInput();
+        return true;
+    }
+
+    if (gameState.levelStatus === 'difficulty') {
+        handleDifficultyInput();
         return true;
     }
 
@@ -613,6 +685,14 @@ function advanceFlowIfNeeded() {
 
     if (gameState.levelStatus === 'dead' && gameState.transitionTimer <= 0) {
         restartFloor();
+        return true;
+    }
+
+    if (gameState.levelStatus === 'gameover') {
+        if (input.consumeAnyPressed(RESTART_KEYS) || gameState.transitionTimer <= 0) {
+            restartRun();
+            return true;
+        }
         return true;
     }
 

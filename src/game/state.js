@@ -22,6 +22,8 @@ export class GameState {
         this.treasures = 0;
         this.secrets = 0;
         this.levelsCompleted = 0;
+        this.difficulty = 1; // 0=baby, 1=easy, 2=medium, 3=hard
+        this.menuCursor = 0;
         this.resetPlayerState();
         this.clearLevelState();
     }
@@ -215,9 +217,16 @@ export class GameState {
         this.lastHitAmount = amount;
 
         if (this.health <= 0) {
-            this.levelStatus = 'dead';
-            this.transitionTimer = 2;
-            this.setMessage('YOU DIED', 2);
+            this.lives -= 1;
+            if (this.lives < 0) {
+                this.levelStatus = 'gameover';
+                this.transitionTimer = 3;
+                this.setMessage('GAME OVER', 3);
+            } else {
+                this.levelStatus = 'dead';
+                this.transitionTimer = 2;
+                this.setMessage('YOU DIED', 2);
+            }
         }
 
         return true;

@@ -304,63 +304,379 @@ function drawCenteredPanel(ctx, canvasWidth, canvasHeight, width, height) {
 }
 
 function drawTitleOverlay(ctx, canvasWidth, canvasHeight, gameState, level) {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    // Full-screen dark red background (like original Wolf3D title)
+    ctx.fillStyle = '#400000';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    const panel = drawCenteredPanel(ctx, canvasWidth, canvasHeight, 430, 220);
 
-    drawSprite(ctx, 'ui_badge_title_0', panel.left + 334, panel.top + 18, 72, 72);
-    ctx.fillStyle = '#fff1c0';
-    ctx.font = 'bold 30px monospace';
-    ctx.fillText('WOLF3D // E1', panel.left + 24, panel.top + 42);
-    ctx.font = 'bold 18px monospace';
-    ctx.fillText(level?.name ?? 'START MISSION', panel.left + 24, panel.top + 74);
-    ctx.font = '13px monospace';
-    ctx.fillStyle = '#d7d2c6';
-    ctx.fillText(level?.metadata?.briefing ?? 'Begin the campaign run.', panel.left + 24, panel.top + 102);
-    ctx.fillText('WASD move  QE strafe  Space use  Ctrl/Enter fire', panel.left + 24, panel.top + 138);
-    ctx.fillText('1/2/3/4/5 switch weapon  Esc pause  H help', panel.left + 24, panel.top + 160);
-    ctx.fillStyle = '#fff1c0';
-    ctx.fillText('Press Enter to start.', panel.left + 24, panel.top + 194);
+    // Brick border pattern (original has decorative border)
+    ctx.fillStyle = '#600000';
+    ctx.fillRect(0, 0, canvasWidth, 16);
+    ctx.fillRect(0, canvasHeight - 16, canvasWidth, 16);
+    ctx.fillRect(0, 0, 16, canvasHeight);
+    ctx.fillRect(canvasWidth - 16, 0, 16, canvasHeight);
+    ctx.fillStyle = '#800000';
+    ctx.fillRect(2, 2, canvasWidth - 4, 2);
+    ctx.fillRect(2, 2, 2, canvasHeight - 4);
+
+    // Title: WOLFENSTEIN 3-D
+    ctx.fillStyle = '#d0a030';
+    ctx.font = 'bold 48px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('WOLFENSTEIN', canvasWidth / 2, 100);
+    ctx.font = 'bold 64px monospace';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('3-D', canvasWidth / 2, 170);
+
+    // Subtitle
+    ctx.font = 'bold 16px monospace';
+    ctx.fillStyle = '#c0c0c0';
+    ctx.fillText('EPISODE ONE: ESCAPE FROM WOLFENSTEIN', canvasWidth / 2, 210);
+
+    // Wolf3D badge/emblem
+    drawSprite(ctx, 'ui_badge_title_0', canvasWidth / 2 - 36, 230, 72, 72);
+
+    // "Press any key" blinking
+    const blink = Math.floor(Date.now() / 500) % 2;
+    if (blink) {
+        ctx.font = 'bold 18px monospace';
+        ctx.fillStyle = '#d0a030';
+        ctx.fillText('PRESS ENTER OR SPACE', canvasWidth / 2, 340);
+    }
+
+    // Credits
+    ctx.font = '11px monospace';
+    ctx.fillStyle = '#808080';
+    ctx.fillText('Based on Wolfenstein 3D by id Software, 1992', canvasWidth / 2, 380);
+    ctx.textAlign = 'start';
+}
+
+function drawMenuOverlay(ctx, canvasWidth, canvasHeight, gameState) {
+    // Full-screen dark blue background (original menu style)
+    ctx.fillStyle = '#0a1828';
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    // Title
+    ctx.fillStyle = '#d0a030';
+    ctx.font = 'bold 32px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('WOLFENSTEIN 3-D', canvasWidth / 2, 60);
+
+    // Menu border
+    const menuW = 340;
+    const menuH = 220;
+    const menuX = (canvasWidth - menuW) / 2;
+    const menuY = 90;
+
+    // Dark teal panel (original menu background)
+    ctx.fillStyle = '#1a3040';
+    ctx.fillRect(menuX, menuY, menuW, menuH);
+    // Border
+    ctx.fillStyle = '#4a7888';
+    ctx.fillRect(menuX, menuY, menuW, 2);
+    ctx.fillRect(menuX, menuY, 2, menuH);
+    ctx.fillStyle = '#0a1018';
+    ctx.fillRect(menuX, menuY + menuH - 2, menuW, 2);
+    ctx.fillRect(menuX + menuW - 2, menuY, 2, menuH);
+
+    // Menu items
+    const items = ['NEW GAME', 'DIFFICULTY', 'HELP', 'BACK TO TITLE'];
+    const itemH = 40;
+    const startY = menuY + 30;
+
+    ctx.font = 'bold 20px monospace';
+    for (let i = 0; i < items.length; i++) {
+        const y = startY + i * itemH;
+        if (i === gameState.menuCursor) {
+            // Selected item highlight
+            ctx.fillStyle = '#2a5060';
+            ctx.fillRect(menuX + 10, y - 4, menuW - 20, 30);
+            ctx.fillStyle = '#ffffff';
+            // Cursor arrow
+            ctx.fillText('\u25B6', menuX + 20, y + 18);
+        } else {
+            ctx.fillStyle = '#8aa0b0';
+        }
+        ctx.fillText(items[i], menuX + 50, y + 18);
+    }
+
+    // Controls hint
+    ctx.font = '12px monospace';
+    ctx.fillStyle = '#506878';
+    ctx.fillText('Arrow Keys to select, Enter to confirm, Esc to go back', canvasWidth / 2, menuY + menuH + 30);
+    ctx.textAlign = 'start';
+}
+
+function drawDifficultyOverlay(ctx, canvasWidth, canvasHeight, gameState) {
+    ctx.fillStyle = '#0a1828';
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    ctx.fillStyle = '#d0a030';
+    ctx.font = 'bold 28px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('HOW TOUGH ARE YOU?', canvasWidth / 2, 60);
+
+    const menuW = 400;
+    const menuH = 260;
+    const menuX = (canvasWidth - menuW) / 2;
+    const menuY = 80;
+
+    ctx.fillStyle = '#1a3040';
+    ctx.fillRect(menuX, menuY, menuW, menuH);
+    ctx.fillStyle = '#4a7888';
+    ctx.fillRect(menuX, menuY, menuW, 2);
+    ctx.fillRect(menuX, menuY, 2, menuH);
+    ctx.fillStyle = '#0a1018';
+    ctx.fillRect(menuX, menuY + menuH - 2, menuW, 2);
+    ctx.fillRect(menuX + menuW - 2, menuY, 2, menuH);
+
+    const difficulties = [
+        { name: 'CAN I PLAY, DADDY?', desc: 'Easy — more ammo, weaker enemies' },
+        { name: "DON'T HURT ME", desc: 'Normal — balanced challenge' },
+        { name: "BRING 'EM ON!", desc: 'Hard — tougher, smarter enemies' },
+        { name: 'I AM DEATH INCARNATE!', desc: 'Nightmare — maximum challenge' },
+    ];
+
+    const itemH = 50;
+    const startY = menuY + 25;
+
+    for (let i = 0; i < difficulties.length; i++) {
+        const y = startY + i * itemH;
+        if (i === gameState.menuCursor) {
+            ctx.fillStyle = '#2a5060';
+            ctx.fillRect(menuX + 10, y - 4, menuW - 20, 42);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 18px monospace';
+            ctx.fillText('\u25B6', menuX + 20, y + 18);
+        } else {
+            ctx.fillStyle = '#8aa0b0';
+            ctx.font = 'bold 18px monospace';
+        }
+        ctx.fillText(difficulties[i].name, menuX + 50, y + 18);
+        ctx.font = '12px monospace';
+        ctx.fillStyle = i === gameState.menuCursor ? '#b0c0d0' : '#506070';
+        ctx.fillText(difficulties[i].desc, menuX + 50, y + 34);
+    }
+
+    ctx.font = '12px monospace';
+    ctx.fillStyle = '#506878';
+    ctx.fillText('Arrow Keys to select, Enter to start, Esc to go back', canvasWidth / 2, menuY + menuH + 30);
+    ctx.textAlign = 'start';
+}
+
+function pct(n, total) {
+    return total > 0 ? Math.floor((n / total) * 100) : 0;
 }
 
 function drawIntermissionOverlay(ctx, canvasWidth, canvasHeight, gameState) {
     const summary = gameState.lastCompletedLevel;
     if (!summary) return;
 
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.56)';
+    // Full-screen dark blue (original intermission background)
+    ctx.fillStyle = '#0a1828';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    const panel = drawCenteredPanel(ctx, canvasWidth, canvasHeight, 420, 228);
 
-    ctx.fillStyle = '#fff1c0';
-    ctx.font = 'bold 26px monospace';
-    ctx.fillText('FLOOR CLEAR', panel.left + 24, panel.top + 40);
-    ctx.font = 'bold 16px monospace';
-    ctx.fillText(summary.name, panel.left + 24, panel.top + 70);
-    ctx.font = '13px monospace';
-    ctx.fillStyle = '#d7d2c6';
-    ctx.fillText(`TIME     ${formatTime(summary.time)}`, panel.left + 24, panel.top + 102);
-    ctx.fillText(`KILLS    ${summary.kills}/${summary.enemiesTotal}`, panel.left + 24, panel.top + 126);
-    ctx.fillText(`PICKUPS  ${summary.pickups}/${summary.pickupsTotal}`, panel.left + 24, panel.top + 150);
-    ctx.fillText(`HEALTH   ${summary.health}`, panel.left + 24, panel.top + 174);
-    ctx.fillText(`ARMOR    ${summary.armor}`, panel.left + 24, panel.top + 198);
-    ctx.fillText(`SCORE    ${summary.score}`, panel.left + 220, panel.top + 102);
-    ctx.fillText(`NEXT     ${gameState.pendingLevelName}`, panel.left + 220, panel.top + 126);
-    ctx.fillText(`SECRETS  ${summary.secrets}/${summary.secretsTotal}`, panel.left + 220, panel.top + 150);
-    ctx.fillText(`TREASURE ${summary.treasures}/${summary.treasuresTotal}`, panel.left + 220, panel.top + 174);
-    ctx.fillStyle = '#fff1c0';
-    ctx.fillText('Press Enter to deploy to the next floor.', panel.left + 24, panel.top + 216);
+    const killPct = pct(summary.kills, summary.enemiesTotal);
+    const secretPct = pct(summary.secrets, summary.secretsTotal);
+    const treasurePct = pct(summary.treasures, summary.treasuresTotal);
+    const timeBonus = Math.max(0, 500 - Math.floor(summary.time) * 2);
+    const perfectKills = killPct === 100 ? 10000 : 0;
+    const perfectSecrets = secretPct === 100 ? 10000 : 0;
+    const perfectTreasures = treasurePct === 100 ? 10000 : 0;
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#d0a030';
+    ctx.font = 'bold 36px monospace';
+    ctx.fillText('FLOOR COMPLETED!', canvasWidth / 2, 50);
+
+    ctx.font = 'bold 18px monospace';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(summary.name, canvasWidth / 2, 80);
+
+    // Stats panel
+    const panelW = 440;
+    const panelX = (canvasWidth - panelW) / 2;
+    const panelY = 100;
+
+    ctx.fillStyle = '#1a3040';
+    ctx.fillRect(panelX, panelY, panelW, 220);
+    ctx.fillStyle = '#4a7888';
+    ctx.fillRect(panelX, panelY, panelW, 2);
+    ctx.fillRect(panelX, panelY, 2, 220);
+
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 20px monospace';
+    const lx = panelX + 30;
+    const rx = panelX + panelW - 30;
+    let y = panelY + 36;
+    const lineH = 32;
+
+    // Time
+    ctx.fillStyle = '#8ab0c0';
+    ctx.fillText('TIME', lx, y);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(formatTime(summary.time), rx, y);
+    ctx.textAlign = 'left';
+    y += lineH;
+
+    // Kill ratio
+    ctx.fillStyle = '#8ab0c0';
+    ctx.fillText('KILL RATIO', lx, y);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = killPct === 100 ? '#d0a030' : '#ffffff';
+    ctx.fillText(`${killPct}%`, rx, y);
+    ctx.textAlign = 'left';
+    y += lineH;
+
+    // Secret ratio
+    ctx.fillStyle = '#8ab0c0';
+    ctx.fillText('SECRET RATIO', lx, y);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = secretPct === 100 ? '#d0a030' : '#ffffff';
+    ctx.fillText(`${secretPct}%`, rx, y);
+    ctx.textAlign = 'left';
+    y += lineH;
+
+    // Treasure ratio
+    ctx.fillStyle = '#8ab0c0';
+    ctx.fillText('TREASURE RATIO', lx, y);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = treasurePct === 100 ? '#d0a030' : '#ffffff';
+    ctx.fillText(`${treasurePct}%`, rx, y);
+    ctx.textAlign = 'left';
+    y += lineH + 8;
+
+    // Bonus line
+    const totalBonus = timeBonus + perfectKills + perfectSecrets + perfectTreasures;
+    ctx.fillStyle = '#d0a030';
+    ctx.fillText('BONUS', lx, y);
+    ctx.textAlign = 'right';
+    ctx.fillText(`${totalBonus}`, rx, y);
+    ctx.textAlign = 'left';
+    y += lineH;
+
+    // Score
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 22px monospace';
+    ctx.fillText('SCORE', lx, y);
+    ctx.textAlign = 'right';
+    ctx.fillText(`${summary.score + totalBonus}`, rx, y);
+
+    // 100% bonus messages
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 14px monospace';
+    if (killPct === 100) {
+        ctx.fillStyle = '#d0a030';
+        ctx.fillText('100% KILLS BONUS: 10,000', canvasWidth / 2, panelY + 232);
+    }
+
+    // Continue prompt
+    const blink = Math.floor(Date.now() / 600) % 2;
+    if (blink) {
+        ctx.fillStyle = '#d0a030';
+        ctx.font = 'bold 16px monospace';
+        ctx.fillText('PRESS ENTER TO CONTINUE', canvasWidth / 2, 350);
+    }
+    ctx.textAlign = 'start';
 }
 
-function drawEndOverlay(ctx, canvasWidth, canvasHeight, title, subtitle) {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.42)';
+function drawDeathOverlay(ctx, canvasWidth, canvasHeight, gameState) {
+    // Dark red overlay (original death screen: red-tinted)
+    ctx.fillStyle = 'rgba(80, 0, 0, 0.7)';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    const panel = drawCenteredPanel(ctx, canvasWidth, canvasHeight, 360, 140);
-    ctx.fillStyle = '#fff6ce';
-    ctx.font = 'bold 24px monospace';
+
     ctx.textAlign = 'center';
-    ctx.fillText(title, panel.left + 180, panel.top + 52);
+
+    // BJ face (pain)
+    drawSprite(ctx, 'ui_face_critical_0', canvasWidth / 2 - 40, 100, 80, 80);
+
+    ctx.fillStyle = '#ff4444';
+    ctx.font = 'bold 42px monospace';
+    ctx.fillText('YOU DIED', canvasWidth / 2, 230);
+
+    ctx.fillStyle = '#c0c0c0';
+    ctx.font = '16px monospace';
+    ctx.fillText(`LIVES REMAINING: ${Math.max(0, gameState.lives)}`, canvasWidth / 2, 270);
+
+    const blink = Math.floor(Date.now() / 600) % 2;
+    if (blink) {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 16px monospace';
+        ctx.fillText('PRESS ENTER TO CONTINUE', canvasWidth / 2, 320);
+    }
+    ctx.textAlign = 'start';
+}
+
+function drawGameOverOverlay(ctx, canvasWidth, canvasHeight, gameState) {
+    // Full black screen (original game over)
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    ctx.textAlign = 'center';
+
+    // BJ face
+    drawSprite(ctx, 'ui_face_critical_0', canvasWidth / 2 - 40, 80, 80, 80);
+
+    ctx.fillStyle = '#ff0000';
+    ctx.font = 'bold 48px monospace';
+    ctx.fillText('GAME OVER', canvasWidth / 2, 220);
+
+    ctx.fillStyle = '#c0c0c0';
+    ctx.font = '18px monospace';
+    ctx.fillText(`FINAL SCORE: ${gameState.score}`, canvasWidth / 2, 270);
+    ctx.fillText(`FLOORS CLEARED: ${gameState.levelsCompleted}`, canvasWidth / 2, 296);
+
+    const blink = Math.floor(Date.now() / 600) % 2;
+    if (blink) {
+        ctx.fillStyle = '#d0a030';
+        ctx.font = 'bold 16px monospace';
+        ctx.fillText('PRESS ENTER TO RETURN TO MENU', canvasWidth / 2, 350);
+    }
+    ctx.textAlign = 'start';
+}
+
+function drawVictoryOverlay(ctx, canvasWidth, canvasHeight, gameState) {
+    // Dark blue victory screen
+    ctx.fillStyle = '#0a1020';
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    ctx.textAlign = 'center';
+
+    // Gold border
+    ctx.fillStyle = '#d0a030';
+    ctx.fillRect(20, 20, canvasWidth - 40, 4);
+    ctx.fillRect(20, canvasHeight - 24, canvasWidth - 40, 4);
+    ctx.fillRect(20, 20, 4, canvasHeight - 40);
+    ctx.fillRect(canvasWidth - 24, 20, 4, canvasHeight - 40);
+
+    // Title
+    ctx.fillStyle = '#d0a030';
+    ctx.font = 'bold 36px monospace';
+    ctx.fillText('EPISODE COMPLETE!', canvasWidth / 2, 80);
+
+    // BJ face (healthy, victorious)
+    drawSprite(ctx, 'ui_face_healthy_0', canvasWidth / 2 - 40, 100, 80, 80);
+
+    // Stats
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 20px monospace';
+    ctx.fillText(`FINAL SCORE: ${gameState.score}`, canvasWidth / 2, 220);
+    ctx.fillText(`TOTAL KILLS: ${gameState.kills}`, canvasWidth / 2, 250);
+    ctx.fillText(`SECRETS FOUND: ${gameState.secrets}`, canvasWidth / 2, 280);
+    ctx.fillText(`TREASURES: ${gameState.treasures}`, canvasWidth / 2, 310);
+
+    // Story ending text
+    ctx.fillStyle = '#8ab0c0';
     ctx.font = '14px monospace';
-    ctx.fillText(subtitle, panel.left + 180, panel.top + 88);
+    ctx.fillText('You have escaped from the Nazi fortress!', canvasWidth / 2, 344);
+    ctx.fillText('But the war is far from over...', canvasWidth / 2, 364);
+
+    const blink = Math.floor(Date.now() / 600) % 2;
+    if (blink) {
+        ctx.fillStyle = '#d0a030';
+        ctx.font = 'bold 16px monospace';
+        ctx.fillText('PRESS ENTER TO RETURN TO MENU', canvasWidth / 2, 390);
+    }
     ctx.textAlign = 'start';
 }
 
@@ -444,12 +760,18 @@ export function drawHUD(ctx, frame) {
     // Overlay screens
     if (gameState.levelStatus === 'title') {
         drawTitleOverlay(ctx, canvasWidth, canvasHeight, gameState, level);
+    } else if (gameState.levelStatus === 'menu') {
+        drawMenuOverlay(ctx, canvasWidth, canvasHeight, gameState);
+    } else if (gameState.levelStatus === 'difficulty') {
+        drawDifficultyOverlay(ctx, canvasWidth, canvasHeight, gameState);
     } else if (gameState.levelStatus === 'intermission') {
         drawIntermissionOverlay(ctx, canvasWidth, canvasHeight, gameState);
     } else if (gameState.levelStatus === 'dead') {
-        drawEndOverlay(ctx, canvasWidth, canvasHeight, 'YOU DIED', 'Press Enter to restart the floor');
+        drawDeathOverlay(ctx, canvasWidth, canvasHeight, gameState);
+    } else if (gameState.levelStatus === 'gameover') {
+        drawGameOverOverlay(ctx, canvasWidth, canvasHeight, gameState);
     } else if (gameState.levelStatus === 'victory') {
-        drawEndOverlay(ctx, canvasWidth, canvasHeight, 'EPISODE CLEAR', 'Press Enter to restart the campaign');
+        drawVictoryOverlay(ctx, canvasWidth, canvasHeight, gameState);
     }
 
     if (gameState.paused) {
