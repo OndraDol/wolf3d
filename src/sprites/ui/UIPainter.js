@@ -4,6 +4,10 @@ function createFrame(key, label) {
     return { key, label };
 }
 
+/**
+ * UI sprite painter — BJ face, keys, stat icons, title badge.
+ * Face is more detailed and faithful to original Wolf3D.
+ */
 export class UIPainter extends SpritePainter {
     getFrames() {
         return [
@@ -28,7 +32,7 @@ export class UIPainter extends SpritePainter {
         this.clear(ctx, width, height);
 
         if (key.startsWith('ui_face_')) {
-            this.paintFace(ctx, key);
+            this.paintFace(ctx, width, height, key);
             return;
         }
         if (key.startsWith('ui_key_')) {
@@ -45,48 +49,126 @@ export class UIPainter extends SpritePainter {
         }
     }
 
-    paintFace(ctx, key) {
+    paintFace(ctx, width, height, key) {
         const mood = key.replace('ui_face_', '').replace('_0', '');
-        const skin = mood === 'pain'
-            ? '#efc5c5'
-            : (mood === 'critical' ? '#b47a63' : (mood === 'wounded' ? '#c69168' : '#d9a57b'));
-        const uniform = mood === 'pain' ? '#455b79' : '#324760';
-        const browTilt = mood === 'healthy' ? 0 : (mood === 'wounded' ? 1 : 2);
-        const mouthY = mood === 'healthy' ? 43 : (mood === 'wounded' ? 45 : 47);
-        const mouthWidth = mood === 'critical' ? 16 : 12;
 
-        this.drawShadowEllipse(ctx, 32, 56, 18, 5, 0.18);
-        ctx.fillStyle = '#1a2330';
-        ctx.fillRect(12, 12, 40, 46);
-        ctx.fillStyle = uniform;
-        ctx.fillRect(18, 34, 28, 18);
+        // Skin tones matching original Wolf3D BJ
+        const skin = mood === 'pain' ? '#e8b0b0'
+            : mood === 'critical' ? '#b87a60' : mood === 'wounded' ? '#c8946a' : '#d8a878';
+        const skinDark = mood === 'pain' ? '#c89090'
+            : mood === 'critical' ? '#986048' : mood === 'wounded' ? '#a87850' : '#b88858';
+        const hairColor = '#5a3818';
+        const eyeWhite = mood === 'pain' ? '#ffffff' : '#e8e0d8';
+        const eyeColor = '#2a4a28';
 
+        const cx = width / 2;
+        const cy = height / 2 - 2;
+
+        // Background (dark)
+        ctx.fillStyle = '#181818';
+        ctx.fillRect(0, 0, width, height);
+
+        // Neck / uniform collar
+        ctx.fillStyle = '#2a4060';
+        ctx.fillRect(cx - 12, cy + 14, 24, 20);
+        ctx.fillStyle = '#344a6a';
+        ctx.fillRect(cx - 10, cy + 14, 20, 2);
+
+        // Head shape — oval
         ctx.fillStyle = skin;
         ctx.beginPath();
-        ctx.ellipse(32, 29, 14, 17, 0, 0, Math.PI * 2);
+        ctx.ellipse(cx, cy, 14, 18, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = '#3b2617';
-        ctx.fillRect(19, 14, 26, 6);
-        ctx.fillRect(20, 18, 4, 4);
-        ctx.fillRect(40, 18, 4, 4);
+        // Jaw shadow
+        ctx.fillStyle = skinDark;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + 8, 12, 10, 0, 0, Math.PI);
+        ctx.fill();
+        // Re-fill skin on top half
+        ctx.fillStyle = skin;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy - 2, 13, 14, 0, 0, Math.PI, true);
+        ctx.fill();
 
-        ctx.fillStyle = '#241810';
-        ctx.fillRect(22, 25 + browTilt, 7, 2);
-        ctx.fillRect(35, 25 + browTilt, 7, 2);
-        ctx.fillRect(24, 30, 4, 3);
-        ctx.fillRect(37, 30, 4, 3);
-        ctx.fillRect(31, 34, 2, 5);
-        ctx.fillRect(26, mouthY, mouthWidth, 2);
+        // Hair (flat-top style like BJ)
+        ctx.fillStyle = hairColor;
+        ctx.fillRect(cx - 13, cy - 18, 26, 8);
+        ctx.fillRect(cx - 12, cy - 16, 2, 6);
+        ctx.fillRect(cx + 10, cy - 16, 2, 6);
 
+        // Ears
+        ctx.fillStyle = skinDark;
+        ctx.fillRect(cx - 15, cy - 4, 3, 8);
+        ctx.fillRect(cx + 12, cy - 4, 3, 8);
+
+        // Eyes
+        const eyeY = cy - 4;
+        const leftEyeX = cx - 6;
+        const rightEyeX = cx + 2;
+
+        // Eye whites
+        ctx.fillStyle = eyeWhite;
+        ctx.fillRect(leftEyeX, eyeY, 5, 4);
+        ctx.fillRect(rightEyeX, eyeY, 5, 4);
+
+        // Iris/pupil
+        ctx.fillStyle = eyeColor;
+        ctx.fillRect(leftEyeX + 1, eyeY + 1, 3, 2);
+        ctx.fillRect(rightEyeX + 1, eyeY + 1, 3, 2);
+        ctx.fillStyle = '#101010';
+        ctx.fillRect(leftEyeX + 2, eyeY + 1, 1, 2);
+        ctx.fillRect(rightEyeX + 2, eyeY + 1, 1, 2);
+
+        // Eyebrows
+        const browTilt = mood === 'healthy' ? 0 : mood === 'wounded' ? 1 : 2;
+        ctx.fillStyle = '#3a2610';
+        ctx.fillRect(leftEyeX - 1, eyeY - 3 + browTilt, 7, 2);
+        ctx.fillRect(rightEyeX - 1, eyeY - 3 + browTilt, 7, 2);
+
+        // Nose
+        ctx.fillStyle = skinDark;
+        ctx.fillRect(cx - 1, cy + 1, 3, 5);
+        ctx.fillStyle = skin;
+        ctx.fillRect(cx - 1, cy + 1, 2, 4);
+
+        // Mouth
+        const mouthY = cy + 9;
         if (mood === 'critical') {
-            ctx.fillStyle = '#7f1f1f';
-            ctx.fillRect(40, 34, 3, 2);
+            // Open mouth / grimace
+            ctx.fillStyle = '#401010';
+            ctx.fillRect(cx - 5, mouthY, 10, 4);
+            ctx.fillStyle = '#e0e0e0';
+            ctx.fillRect(cx - 4, mouthY, 8, 1);
+        } else if (mood === 'pain') {
+            // Wide open pain mouth
+            ctx.fillStyle = '#501818';
+            ctx.fillRect(cx - 6, mouthY - 1, 12, 5);
+            ctx.fillStyle = '#e0e0e0';
+            ctx.fillRect(cx - 5, mouthY - 1, 10, 1);
+        } else if (mood === 'wounded') {
+            // Tense mouth
+            ctx.fillStyle = '#6a3a2a';
+            ctx.fillRect(cx - 5, mouthY, 10, 2);
+        } else {
+            // Healthy — slight grin
+            ctx.fillStyle = '#8a5a3a';
+            ctx.fillRect(cx - 4, mouthY, 8, 2);
+            ctx.fillStyle = '#e0d0c0';
+            ctx.fillRect(cx - 3, mouthY, 6, 1);
         }
+
+        // Blood splatter for critical
+        if (mood === 'critical') {
+            ctx.fillStyle = '#8a1818';
+            ctx.fillRect(cx + 8, cy + 2, 3, 3);
+            ctx.fillRect(cx + 7, cy + 5, 2, 4);
+        }
+
+        // Pain flash effect
         if (mood === 'pain') {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(13, 13, 38, 2);
-            ctx.fillRect(13, 13, 2, 38);
+            ctx.fillStyle = 'rgba(255, 200, 200, 0.2)';
+            ctx.fillRect(0, 0, width, height);
         }
     }
 

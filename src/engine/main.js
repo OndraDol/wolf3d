@@ -22,6 +22,8 @@ import { Raycaster } from './raycaster.js';
 
 const SCREEN_WIDTH = 640;
 const SCREEN_HEIGHT = 400;
+const VIEWPORT_HEIGHT = 320;
+const STATUS_BAR_HEIGHT = SCREEN_HEIGHT - VIEWPORT_HEIGHT;
 const TARGET_FPS = 60;
 const DEFAULT_LEVEL_ID = 'e1m1-skeleton';
 const FIRE_KEYS = ['ControlLeft', 'ControlRight', 'Enter', 'KeyF'];
@@ -106,7 +108,7 @@ function loadWorld(levelId, options = {}) {
     level = loadLevel(levelId);
     map = new GameMap(level);
     camera = new Camera(map, level.playerStart);
-    raycaster = new Raycaster(map, SCREEN_WIDTH, SCREEN_HEIGHT);
+    raycaster = new Raycaster(map, SCREEN_WIDTH, VIEWPORT_HEIGHT);
     entities = level.entities.map((entity) => new Enemy(entity.x, entity.y, entity.type, entity));
     pickups = level.pickups.map(createRuntimePickup);
     props = level.props.map((prop) => ({ ...prop }));
@@ -131,7 +133,7 @@ function init() {
     const canvas = document.getElementById('screen');
 
     runStartLevelId = getRequestedLevelId();
-    screen = new Screen(canvas, SCREEN_WIDTH, SCREEN_HEIGHT);
+    screen = new Screen(canvas, SCREEN_WIDTH, SCREEN_HEIGHT, VIEWPORT_HEIGHT);
     input = new Input();
     gameState = new GameState();
     initTextures();

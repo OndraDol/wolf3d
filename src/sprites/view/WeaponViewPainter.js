@@ -1,5 +1,8 @@
 import { SpritePainter } from '../SpritePainter.js';
 
+/**
+ * First-person weapon views — more faithful to original Wolf3D silhouettes.
+ */
 export class WeaponViewPainter extends SpritePainter {
     getFrames() {
         return [
@@ -25,80 +28,195 @@ export class WeaponViewPainter extends SpritePainter {
         const isFire = key.includes('_fire_');
 
         if (isKnife) {
-            ctx.fillStyle = '#d0d4d9';
-            ctx.beginPath();
-            ctx.moveTo(32, 8);
-            ctx.lineTo(40, 36);
-            ctx.lineTo(32, 34);
-            ctx.lineTo(24, 36);
-            ctx.closePath();
-            ctx.fill();
-            ctx.fillStyle = '#5b4028';
-            ctx.fillRect(27, 35, 10, 18);
+            this.paintKnife(ctx, width, height, isFire);
         } else if (isShotgun) {
-            ctx.fillStyle = '#5f4b35';
-            ctx.fillRect(10, 48, 18, 12);
-            ctx.fillRect(36, 48, 18, 12);
-            ctx.fillStyle = '#2a2018';
-            ctx.fillRect(12, 36, 40, 16);
-            ctx.fillStyle = '#53422e';
-            ctx.fillRect(22, 24, 20, 14);
-            ctx.fillStyle = '#9697a0';
-            ctx.fillRect(26, 6, 12, 20);
+            this.paintShotgun(ctx, width, height, isFire);
         } else if (isChainGun) {
-            ctx.fillStyle = '#63513c';
-            ctx.fillRect(12, 46, 16, 12);
-            ctx.fillRect(36, 46, 16, 12);
-            ctx.fillStyle = '#353c45';
-            ctx.fillRect(18, 24, 28, 24);
-            ctx.fillRect(22, 10, 20, 16);
-            ctx.fillStyle = '#b49a46';
-            for (let index = 0; index < 4; index++) {
-                ctx.fillRect(26 + index * 4, 18, 2, 16);
-            }
+            this.paintChaingun(ctx, width, height, isFire);
         } else if (isMachineGun) {
-            ctx.fillStyle = '#5d4732';
-            ctx.fillRect(14, 46, 18, 12);
-            ctx.fillRect(34, 46, 16, 12);
-            ctx.fillStyle = '#2d3138';
-            ctx.fillRect(18, 26, 28, 18);
-            ctx.fillRect(24, 12, 16, 14);
-            ctx.fillStyle = '#d2ba5c';
-            ctx.fillRect(19, 30, 10, 4);
+            this.paintMachinegun(ctx, width, height, isFire);
         } else {
-            ctx.fillStyle = '#5d4732';
-            ctx.fillRect(16, 46, 32, 12);
-            ctx.fillStyle = '#1a1a1a';
-            ctx.fillRect(18, 28, 28, 18);
-            ctx.fillStyle = '#3c3c3c';
-            ctx.fillRect(24, 18, 16, 12);
-            ctx.fillStyle = '#7d7d85';
-            ctx.fillRect(28, 6, 8, 14);
+            this.paintPistol(ctx, width, height, isFire);
         }
+    }
 
+    paintKnife(ctx, width, height, isFire) {
+        // Straight blade — original Wolf3D knife is a dagger shape
+        ctx.fillStyle = '#c0c8d0';
+        ctx.beginPath();
+        ctx.moveTo(30, 6);
+        ctx.lineTo(34, 6);
+        ctx.lineTo(36, 32);
+        ctx.lineTo(32, 34);
+        ctx.lineTo(28, 32);
+        ctx.closePath();
+        ctx.fill();
+        // Blade edge highlight
+        ctx.fillStyle = '#e0e4e8';
+        ctx.beginPath();
+        ctx.moveTo(31, 8);
+        ctx.lineTo(33, 8);
+        ctx.lineTo(34, 30);
+        ctx.lineTo(32, 32);
+        ctx.closePath();
+        ctx.fill();
+        // Guard
+        ctx.fillStyle = '#8a7040';
+        ctx.fillRect(26, 33, 12, 3);
+        // Handle
+        ctx.fillStyle = '#5b3820';
+        ctx.fillRect(28, 36, 8, 16);
+        ctx.fillStyle = '#7a4c2a';
+        ctx.fillRect(29, 37, 6, 14);
+
+        // Hands gripping
         ctx.fillStyle = '#d8b291';
-        if (isKnife) {
-            ctx.fillRect(18, 50, 12, 10);
-            ctx.fillRect(34, 50, 12, 10);
-        } else {
-            ctx.fillRect(6, 52, 14, 10);
-            ctx.fillRect(44, 52, 14, 10);
-        }
+        ctx.fillRect(20, 48, 12, 12);
+        ctx.fillRect(32, 48, 12, 12);
 
         if (isFire) {
-            if (isKnife) {
-                ctx.strokeStyle = '#f4efdc';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(16, 18);
-                ctx.lineTo(48, 38);
-                ctx.stroke();
-            } else if (isChainGun) {
-                this.drawMuzzleFlash(ctx, 25, 8, 7, '#fff6c0', '#f3c34b');
-                this.drawMuzzleFlash(ctx, 39, 8, 7, '#fff6c0', '#f3c34b');
-            } else {
-                this.drawMuzzleFlash(ctx, 32, isShotgun ? 4 : 6, isShotgun ? 12 : 8, '#fff6c0', '#f3c34b');
-            }
+            // Slash motion blur
+            ctx.strokeStyle = 'rgba(220,224,228,0.6)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(14, 16);
+            ctx.lineTo(50, 40);
+            ctx.stroke();
+        }
+    }
+
+    paintPistol(ctx, width, height, isFire) {
+        // Luger-style pistol — original Wolf3D
+        // Barrel
+        ctx.fillStyle = '#4a4a52';
+        ctx.fillRect(27, 8, 10, 18);
+        // Barrel highlight
+        ctx.fillStyle = '#6a6a72';
+        ctx.fillRect(28, 9, 2, 16);
+        // Slide
+        ctx.fillStyle = '#3a3a42';
+        ctx.fillRect(25, 14, 14, 12);
+        // Trigger guard
+        ctx.fillStyle = '#3a3a42';
+        ctx.fillRect(26, 26, 12, 3);
+        ctx.fillRect(25, 28, 3, 6);
+        // Trigger
+        ctx.fillStyle = '#2a2a30';
+        ctx.fillRect(30, 29, 2, 4);
+        // Grip
+        ctx.fillStyle = '#5d4732';
+        ctx.fillRect(27, 29, 10, 16);
+        ctx.fillStyle = '#7a5a3e';
+        ctx.fillRect(28, 30, 8, 14);
+        // Grip texture lines
+        ctx.fillStyle = '#4a3828';
+        for (let y = 32; y < 42; y += 3) {
+            ctx.fillRect(29, y, 6, 1);
+        }
+
+        // Hands
+        ctx.fillStyle = '#d8b291';
+        ctx.fillRect(8, 50, 16, 12);
+        ctx.fillRect(40, 50, 16, 12);
+
+        if (isFire) {
+            this.drawMuzzleFlash(ctx, 32, 6, 9, '#fff8d0', '#f0c848');
+        }
+    }
+
+    paintShotgun(ctx, width, height, isFire) {
+        // Double barrel
+        ctx.fillStyle = '#5a5a62';
+        ctx.fillRect(25, 4, 6, 22);
+        ctx.fillRect(33, 4, 6, 22);
+        // Barrel tips
+        ctx.fillStyle = '#3a3a42';
+        ctx.fillRect(25, 4, 6, 2);
+        ctx.fillRect(33, 4, 6, 2);
+        // Receiver
+        ctx.fillStyle = '#2a2a32';
+        ctx.fillRect(22, 24, 20, 12);
+        // Foregrip
+        ctx.fillStyle = '#5d4228';
+        ctx.fillRect(24, 36, 16, 10);
+        ctx.fillStyle = '#7a5630';
+        ctx.fillRect(25, 37, 14, 8);
+        // Stock
+        ctx.fillStyle = '#4a3420';
+        ctx.fillRect(26, 46, 12, 10);
+
+        // Hands
+        ctx.fillStyle = '#d8b291';
+        ctx.fillRect(8, 50, 14, 12);
+        ctx.fillRect(42, 50, 14, 12);
+
+        if (isFire) {
+            this.drawMuzzleFlash(ctx, 28, 2, 10, '#fff8d0', '#f0c848');
+            this.drawMuzzleFlash(ctx, 36, 2, 10, '#fff8d0', '#f0c848');
+        }
+    }
+
+    paintMachinegun(ctx, width, height, isFire) {
+        // MP40-style submachine gun
+        // Barrel
+        ctx.fillStyle = '#4a4a52';
+        ctx.fillRect(29, 8, 6, 16);
+        // Body/receiver
+        ctx.fillStyle = '#2d3138';
+        ctx.fillRect(22, 24, 20, 14);
+        // Magazine
+        ctx.fillStyle = '#d2ba5c';
+        ctx.fillRect(20, 30, 10, 6);
+        // Stock
+        ctx.fillStyle = '#5d4732';
+        ctx.fillRect(26, 38, 12, 14);
+        ctx.fillStyle = '#7a5a3e';
+        ctx.fillRect(27, 39, 10, 12);
+        // Foregrip
+        ctx.fillStyle = '#3a3a42';
+        ctx.fillRect(24, 22, 16, 4);
+
+        // Hands
+        ctx.fillStyle = '#d8b291';
+        ctx.fillRect(10, 48, 16, 12);
+        ctx.fillRect(38, 48, 16, 12);
+
+        if (isFire) {
+            this.drawMuzzleFlash(ctx, 32, 6, 8, '#fff8d0', '#f0c848');
+        }
+    }
+
+    paintChaingun(ctx, width, height, isFire) {
+        // Gatling-style chain gun
+        // Multiple barrels
+        ctx.fillStyle = '#4a4a52';
+        ctx.fillRect(26, 6, 4, 18);
+        ctx.fillRect(31, 6, 4, 18);
+        ctx.fillRect(36, 8, 4, 16);
+        ctx.fillRect(24, 10, 4, 14);
+        // Barrel band
+        ctx.fillStyle = '#3a3a42';
+        ctx.fillRect(22, 18, 20, 4);
+        // Body
+        ctx.fillStyle = '#353c45';
+        ctx.fillRect(20, 22, 24, 16);
+        // Ammo belt
+        ctx.fillStyle = '#b49a46';
+        for (let i = 0; i < 5; i++) {
+            ctx.fillRect(24 + i * 4, 18, 2, 22);
+        }
+        // Handle/grip
+        ctx.fillStyle = '#63513c';
+        ctx.fillRect(26, 38, 12, 14);
+
+        // Hands
+        ctx.fillStyle = '#d8b291';
+        ctx.fillRect(8, 48, 16, 12);
+        ctx.fillRect(40, 48, 16, 12);
+
+        if (isFire) {
+            this.drawMuzzleFlash(ctx, 28, 4, 7, '#fff8d0', '#f0c848');
+            this.drawMuzzleFlash(ctx, 36, 4, 7, '#fff8d0', '#f0c848');
         }
     }
 }

@@ -117,6 +117,14 @@ export class Raycaster {
                     textureX = doorHit.textureX;
                     side = doorHit.side;
                     hit = true;
+                } else if (this.map.getDoorOpenAmount(mapX, mapY) < 0.85) {
+                    rayDistance = side === 0
+                        ? (mapX - originX + (1 - stepX) / 2) / dirX
+                        : (mapY - originY + (1 - stepY) / 2) / dirY;
+                    hitX = originX + rayDistance * dirX;
+                    hitY = originY + rayDistance * dirY;
+                    textureX = side === 0 ? hitY - Math.floor(hitY) : hitX - Math.floor(hitX);
+                    hit = true;
                 }
             }
         }

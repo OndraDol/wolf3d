@@ -8,10 +8,11 @@
  */
 
 export class Screen {
-    constructor(canvas, width, height) {
+    constructor(canvas, width, height, viewportHeight = height) {
         this.canvas = canvas;
         this.width = width;
         this.height = height;
+        this.viewportHeight = viewportHeight;
 
         canvas.width = width;
         canvas.height = height;
@@ -23,13 +24,13 @@ export class Screen {
         this.pixels = new Uint32Array(this.imageData.data.buffer);
 
         // Barvy pro strop a podlahu (ABGR formát kvůli little-endian)
-        this.ceilingColor = 0xFF333333; // tmavě šedá
-        this.floorColor = 0xFF555555;   // šedá
+        this.ceilingColor = 0xFF383838; // dark gray ceiling
+        this.floorColor = 0xFF555555;   // gray floor
     }
 
-    /** Vyčisti buffer — strop nahoře, podlaha dole */
+    /** Vyčisti buffer — strop nahoře, podlaha dole, status bar area black */
     clear() {
-        const half = Math.floor(this.height / 2);
+        const half = Math.floor(this.viewportHeight / 2);
         const w = this.width;
         const pixels = this.pixels;
 
@@ -39,10 +40,17 @@ export class Screen {
                 pixels[offset + x] = this.ceilingColor;
             }
         }
-        for (let y = half; y < this.height; y++) {
+        for (let y = half; y < this.viewportHeight; y++) {
             const offset = y * w;
             for (let x = 0; x < w; x++) {
                 pixels[offset + x] = this.floorColor;
+            }
+        }
+        // Status bar area — filled black (HUD draws over this via ctx)
+        for (let y = this.viewportHeight; y < this.height; y++) {
+            const offset = y * w;
+            for (let x = 0; x < w; x++) {
+                pixels[offset + x] = 0xFF000000;
             }
         }
     }

@@ -253,8 +253,9 @@ export function drawSprites(screen, frame) {
             continue;
         }
 
+        const viewH = screen.viewportHeight;
         const spriteScreenX = Math.floor((screen.width / 2) * (1 + transformX / transformY));
-        const baseHeight = Math.abs(Math.floor(screen.height / transformY));
+        const baseHeight = Math.abs(Math.floor(viewH / transformY));
         const spriteHeight = item.kind === 'prop'
             ? Math.max(24, Math.floor(baseHeight * (item.payload.scale ?? 1)))
             : baseHeight;
@@ -267,12 +268,12 @@ export function drawSprites(screen, frame) {
                     : spriteHeight));
         const drawX = spriteScreenX - spriteWidth / 2;
         const drawY = item.kind === 'pickup'
-            ? screen.height / 2 - spriteHeight * 0.28
+            ? viewH / 2 - spriteHeight * 0.28
             : (item.kind === 'projectile'
-                ? screen.height / 2 - spriteHeight * 0.12
+                ? viewH / 2 - spriteHeight * 0.12
                 : (item.kind === 'prop'
-                    ? screen.height / 2 - spriteHeight * 0.42
-                    : screen.height / 2 - spriteHeight / 2));
+                    ? viewH / 2 - spriteHeight * 0.42
+                    : viewH / 2 - spriteHeight / 2));
 
         if (drawX >= screen.width || drawX + spriteWidth < 0) {
             continue;

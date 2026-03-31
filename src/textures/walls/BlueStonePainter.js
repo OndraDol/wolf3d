@@ -1,46 +1,47 @@
 import { TexturePainter } from '../TexturePainter.js';
 
+/**
+ * Tile 2 — Blue stone wall (faithful to original Wolf3D).
+ * Purple-blue stone blocks, slightly lighter and more purple than before.
+ */
 export class BlueStonePainter extends TexturePainter {
     paint(ctx, width, height) {
-        this.clear(ctx, width, height, '#1a1a3a');
+        this.clear(ctx, width, height, '#1a1a36');
 
-        let y = 0;
-        let row = 0;
-        while (y < height) {
-            const blockHeight = Math.min(height - y, 10 + Math.floor(this.hash(row, 3, 2) * 9));
-            let x = 0;
-            let column = 0;
+        const blockH = 16;
+        const blockW = 32;
 
-            while (x < width) {
-                const blockWidth = Math.min(width - x, 10 + Math.floor(this.hash(column, row, 5) * 13));
-                const seamOffsetX = Math.round((this.hash(column, row, 8) * 2) - 1);
-                const seamOffsetY = Math.round((this.hash(column, row, 9) * 2) - 1);
-                const blockX = Math.max(0, x + seamOffsetX);
-                const blockY = Math.max(0, y + seamOffsetY);
-                const shade = this.jitterColor('#394678', 12, row * 19 + column * 13);
+        for (let row = 0; row < Math.ceil(height / blockH); row++) {
+            const y = row * blockH;
+            const offset = row % 2 === 1 ? blockW / 2 : 0;
 
-                ctx.fillStyle = shade;
-                ctx.fillRect(blockX + 1, blockY + 1, Math.max(1, blockWidth - 2), Math.max(1, blockHeight - 2));
+            for (let column = -1; column < Math.ceil(width / blockW) + 1; column++) {
+                const x = (column * blockW) + offset;
+                if (x <= -blockW || x >= width) continue;
 
-                ctx.fillStyle = 'rgba(255,255,255,0.08)';
-                ctx.fillRect(blockX + 1, blockY + 1, Math.max(1, blockWidth - 2), 1);
-                ctx.fillStyle = 'rgba(0,0,0,0.18)';
-                ctx.fillRect(blockX + 1, blockY + blockHeight - 2, Math.max(1, blockWidth - 2), 1);
+                const bX = Math.max(0, x + 1);
+                const bY = y + 1;
+                const bW = Math.min(blockW - 2, width - bX);
+                const bH = Math.min(blockH - 2, height - bY);
+                if (bW <= 0 || bH <= 0) continue;
 
-                x += blockWidth;
-                column++;
+                const r = 60 + Math.floor(this.hash(column, row, 1) * 20) - 10;
+                const g = 60 + Math.floor(this.hash(column, row, 2) * 18) - 9;
+                const b = 120 + Math.floor(this.hash(column, row, 3) * 30) - 15;
+
+                ctx.fillStyle = `rgb(${r},${g},${b})`;
+                ctx.fillRect(bX, bY, bW, bH);
+
+                ctx.fillStyle = `rgb(${Math.min(255, r + 18)},${Math.min(255, g + 18)},${Math.min(255, b + 22)})`;
+                ctx.fillRect(bX, bY, bW, 1);
+                ctx.fillRect(bX, bY, 1, bH);
+
+                ctx.fillStyle = `rgb(${Math.max(0, r - 22)},${Math.max(0, g - 22)},${Math.max(0, b - 28)})`;
+                ctx.fillRect(bX, bY + bH - 1, bW, 1);
+                ctx.fillRect(bX + bW - 1, bY, 1, bH);
             }
-
-            y += blockHeight;
-            row++;
         }
 
-        for (let stripe = 0; stripe < 4; stripe++) {
-            ctx.fillStyle = stripe % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.05)';
-            ctx.fillRect(0, stripe * 16, width, 8);
-        }
-
-        this.addSurfaceNoise(ctx, width, height, 6);
+        this.addSurfaceNoise(ctx, width, height, 5);
     }
 }
-

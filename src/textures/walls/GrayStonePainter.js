@@ -1,32 +1,47 @@
 import { TexturePainter } from '../TexturePainter.js';
 
+/**
+ * Tile 4 — Gray stone wall (faithful to original Wolf3D).
+ * Lighter gray rectangular stone blocks with clear mortar.
+ */
 export class GrayStonePainter extends TexturePainter {
     paint(ctx, width, height) {
-        this.clear(ctx, width, height, '#3d3d3d');
+        this.clear(ctx, width, height, '#3a3a3a');
 
-        let y = 0;
-        let row = 0;
-        while (y < height) {
-            const blockHeight = Math.min(height - y, 14 + Math.floor(this.hash(row, 11, 1) * 12));
-            let x = 0;
-            let column = 0;
-            while (x < width) {
-                const blockWidth = Math.min(width - x, 16 + Math.floor(this.hash(column, row, 3) * 13));
-                const color = this.jitterColor('#666666', 14, row * 31 + column * 23);
-                ctx.fillStyle = color;
-                ctx.fillRect(x + 1, y + 1, Math.max(1, blockWidth - 2), Math.max(1, blockHeight - 2));
-                ctx.fillStyle = 'rgba(255,255,255,0.06)';
-                ctx.fillRect(x + 1, y + 1, Math.max(1, blockWidth - 2), 1);
-                ctx.fillStyle = 'rgba(0,0,0,0.16)';
-                ctx.fillRect(x + 1, y + blockHeight - 2, Math.max(1, blockWidth - 2), 2);
-                x += blockWidth;
-                column++;
+        // More uniform rectangular blocks
+        const blockH = 16;
+        const blockW = 32;
+
+        for (let row = 0; row < Math.ceil(height / blockH); row++) {
+            const y = row * blockH;
+            const offset = row % 2 === 1 ? blockW / 2 : 0;
+
+            for (let column = -1; column < Math.ceil(width / blockW) + 1; column++) {
+                const x = (column * blockW) + offset;
+                if (x <= -blockW || x >= width) continue;
+
+                const bX = Math.max(0, x + 1);
+                const bY = y + 1;
+                const bW = Math.min(blockW - 2, width - bX);
+                const bH = Math.min(blockH - 2, height - bY);
+                if (bW <= 0 || bH <= 0) continue;
+
+                const shade = 100 + Math.floor(this.hash(column, row, 3) * 30) - 15;
+                ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
+                ctx.fillRect(bX, bY, bW, bH);
+
+                // Highlight top-left
+                ctx.fillStyle = `rgb(${Math.min(255, shade + 20)},${Math.min(255, shade + 20)},${Math.min(255, shade + 20)})`;
+                ctx.fillRect(bX, bY, bW, 1);
+                ctx.fillRect(bX, bY, 1, bH);
+
+                // Shadow bottom-right
+                ctx.fillStyle = `rgb(${Math.max(0, shade - 25)},${Math.max(0, shade - 25)},${Math.max(0, shade - 25)})`;
+                ctx.fillRect(bX, bY + bH - 1, bW, 1);
+                ctx.fillRect(bX + bW - 1, bY, 1, bH);
             }
-            y += blockHeight;
-            row++;
         }
 
         this.addSurfaceNoise(ctx, width, height, 4);
     }
 }
-

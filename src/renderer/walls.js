@@ -41,10 +41,11 @@ function applyFog(color, distance) {
 
 export function drawWalls(screen, frame) {
     const rays = frame.rays;
-    const centerY = screen.height / 2;
+    const viewportHeight = screen.viewportHeight;
+    const centerY = viewportHeight / 2;
     const pixels = screen.pixels;
     const screenWidth = screen.width;
-    const screenHeight = screen.height;
+    const screenHeight = viewportHeight;
 
     for (let x = 0; x < rays.length; x++) {
         const ray = rays[x];
@@ -53,7 +54,7 @@ export function drawWalls(screen, frame) {
             continue;
         }
 
-        const columnHeight = screen.height / ray.distance;
+        const columnHeight = viewportHeight / ray.distance;
         const yStart = Math.max(0, Math.floor(centerY - columnHeight / 2));
         const yEnd = Math.min(screenHeight - 1, Math.floor(centerY + columnHeight / 2));
         const texture = getTexture(ray.tileType);

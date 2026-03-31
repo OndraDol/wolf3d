@@ -1,46 +1,61 @@
 import { TexturePainter } from '../TexturePainter.js';
 
+/**
+ * Tile 3 — Wood panel wall (faithful to original Wolf3D).
+ * Vertical wood planks, warm tan-brown with visible panel borders.
+ * Horizontal cross-beam at center.
+ */
 export class WoodPainter extends TexturePainter {
     paint(ctx, width, height) {
-        this.drawWoodGrain(ctx, width, height, '#6b4226', '#8a5a34');
+        // Base wood grain
+        this.drawWoodGrain(ctx, width, height, '#7a5530', '#9a6a40');
 
-        for (let x = 0; x < width; x += 8) {
-            const plankColor = this.jitterColor('#6b4226', 10, x * 3);
-            ctx.fillStyle = plankColor;
-            ctx.fillRect(x, 0, 7, height);
+        const plankWidth = 10;
+        for (let x = 0; x < width; x += plankWidth) {
+            const r = 110 + Math.floor(this.hash(x, 0, 1) * 30) - 15;
+            const g = 76 + Math.floor(this.hash(x, 0, 2) * 20) - 10;
+            const b = 42 + Math.floor(this.hash(x, 0, 3) * 16) - 8;
 
-            ctx.fillStyle = 'rgba(255,255,255,0.08)';
+            ctx.fillStyle = `rgb(${r},${g},${b})`;
+            ctx.fillRect(x, 0, plankWidth - 1, height);
+
+            // Left edge highlight
+            ctx.fillStyle = `rgb(${Math.min(255, r + 20)},${Math.min(255, g + 14)},${Math.min(255, b + 10)})`;
             ctx.fillRect(x, 0, 1, height);
-            ctx.fillStyle = '#3b2415';
-            ctx.fillRect(Math.min(width - 1, x + 7), 0, 1, height);
 
+            // Right edge shadow (dark groove)
+            ctx.fillStyle = `rgb(${Math.max(0, r - 40)},${Math.max(0, g - 30)},${Math.max(0, b - 20)})`;
+            ctx.fillRect(x + plankWidth - 1, 0, 1, height);
+
+            // Wood knots
             if (this.hash(x, width, 17) > 0.72) {
                 const knotY = 10 + Math.floor(this.hash(x, 4, 21) * (height - 20));
-                ctx.fillStyle = '#4a2816';
+                ctx.fillStyle = `rgb(${Math.max(0, r - 30)},${Math.max(0, g - 24)},${Math.max(0, b - 16)})`;
                 ctx.beginPath();
-                ctx.ellipse(x + 4, knotY, 2.5, 4.5, 0, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillStyle = 'rgba(255,255,255,0.12)';
-                ctx.beginPath();
-                ctx.ellipse(x + 3, knotY - 1, 1.3, 2.2, 0, 0, Math.PI * 2);
+                ctx.ellipse(x + plankWidth / 2, knotY, 2.5, 4.5, 0, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
+        // Horizontal cross-beam at 1/3 and 2/3 height
+        ctx.fillStyle = '#4a3018';
+        ctx.fillRect(0, Math.floor(height / 3) - 2, width, 4);
+        ctx.fillRect(0, Math.floor(height * 2 / 3) - 2, width, 4);
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        ctx.fillRect(0, Math.floor(height / 3) - 2, width, 1);
+        ctx.fillRect(0, Math.floor(height * 2 / 3) - 2, width, 1);
+
+        // Subtle grain overlay
         ctx.save();
-        ctx.globalAlpha = 0.18;
-        ctx.strokeStyle = '#a06d42';
+        ctx.globalAlpha = 0.14;
+        ctx.strokeStyle = '#a07040';
         ctx.lineWidth = 1;
-        for (let band = 4; band < height; band += 6) {
+        for (let band = 3; band < height; band += 5) {
             ctx.beginPath();
             for (let x = 0; x <= width; x += 2) {
-                const wave = Math.sin((x * 0.18) + (band * 0.2)) * 1.4;
-                if (x === 0) {
-                    ctx.moveTo(x, band + wave);
-                } else {
-                    ctx.lineTo(x, band + wave);
-                }
+                const wave = Math.sin((x * 0.18) + (band * 0.2)) * 1.2;
+                if (x === 0) ctx.moveTo(x, band + wave);
+                else ctx.lineTo(x, band + wave);
             }
             ctx.stroke();
         }
@@ -49,4 +64,3 @@ export class WoodPainter extends TexturePainter {
         this.addSurfaceNoise(ctx, width, height, 4);
     }
 }
-
