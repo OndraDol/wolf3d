@@ -29,7 +29,8 @@ export class SSPainter extends SpritePainter {
         const isPain = state === 'pain';
         const isWalk = state === 'walk';
         const isDeath = state === 'death';
-        const uniform = isPain ? '#cfd9e6' : '#1a3a5c';
+        // Original Wolf3D SS: dark blue (palette compromise for black)
+        const uniform = isPain ? '#cfd9e6' : '#162c4a';
         const stepOffset = isWalk ? (frameIndex === 0 ? 3 : -2) : 0;
 
         ctx.fillStyle = '#4e5661';

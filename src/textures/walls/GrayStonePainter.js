@@ -1,47 +1,62 @@
 import { TexturePainter } from '../TexturePainter.js';
 
 /**
- * Tile 4 — Gray stone wall (faithful to original Wolf3D).
- * Lighter gray rectangular stone blocks with clear mortar.
+ * Tile 4 — Gray stone wall — exact copy of original Wolf3D.
+ * Original: irregular rectangular stone blocks, medium gray palette
+ * (VGA ~96-152 gray), dark mortar (~48,48,48), blocks ~16-32px wide, 8-16px tall.
+ * Each block has subtle 1px highlight top-left and shadow bottom-right.
  */
 export class GrayStonePainter extends TexturePainter {
     paint(ctx, width, height) {
-        this.clear(ctx, width, height, '#3a3a3a');
+        // Dark mortar background (original Wolf3D mortar gray)
+        this.clear(ctx, width, height, '#282828');
 
-        // More uniform rectangular blocks
-        const blockH = 16;
-        const blockW = 32;
+        // Pre-defined block layout matching the original stone pattern
+        // Original has semi-regular blocks with slight size variation
+        const rows = [
+            { y: 0, h: 12 },
+            { y: 12, h: 10 },
+            { y: 22, h: 14 },
+            { y: 36, h: 10 },
+            { y: 46, h: 8 },
+            { y: 54, h: 10 },
+        ];
 
-        for (let row = 0; row < Math.ceil(height / blockH); row++) {
-            const y = row * blockH;
-            const offset = row % 2 === 1 ? blockW / 2 : 0;
+        for (let ri = 0; ri < rows.length; ri++) {
+            const { y, h } = rows[ri];
+            const offset = ri % 2 === 0 ? 0 : 10;
+            let x = offset;
+            let ci = 0;
 
-            for (let column = -1; column < Math.ceil(width / blockW) + 1; column++) {
-                const x = (column * blockW) + offset;
-                if (x <= -blockW || x >= width) continue;
+            while (x < width) {
+                const blockW = 14 + Math.floor(this.hash(ci, ri, 3) * 12);
+                const actualW = Math.min(blockW, width - x);
+                if (actualW < 3) { x += actualW; ci++; continue; }
 
-                const bX = Math.max(0, x + 1);
-                const bY = y + 1;
-                const bW = Math.min(blockW - 2, width - bX);
-                const bH = Math.min(blockH - 2, height - bY);
-                if (bW <= 0 || bH <= 0) continue;
+                // Stone shade — original uses palette grays
+                const shade = 100 + Math.floor(this.hash(ci, ri, 7) * 48);
 
-                const shade = 100 + Math.floor(this.hash(column, row, 3) * 30) - 15;
+                // Main block face
                 ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
-                ctx.fillRect(bX, bY, bW, bH);
+                ctx.fillRect(x + 1, y + 1, actualW - 2, h - 2);
 
-                // Highlight top-left
-                ctx.fillStyle = `rgb(${Math.min(255, shade + 20)},${Math.min(255, shade + 20)},${Math.min(255, shade + 20)})`;
-                ctx.fillRect(bX, bY, bW, 1);
-                ctx.fillRect(bX, bY, 1, bH);
+                // Top highlight
+                const hi = Math.min(255, shade + 24);
+                ctx.fillStyle = `rgb(${hi},${hi},${hi})`;
+                ctx.fillRect(x + 1, y + 1, actualW - 2, 1);
+                ctx.fillRect(x + 1, y + 1, 1, h - 2);
 
-                // Shadow bottom-right
-                ctx.fillStyle = `rgb(${Math.max(0, shade - 25)},${Math.max(0, shade - 25)},${Math.max(0, shade - 25)})`;
-                ctx.fillRect(bX, bY + bH - 1, bW, 1);
-                ctx.fillRect(bX + bW - 1, bY, 1, bH);
+                // Bottom-right shadow
+                const sh = Math.max(0, shade - 28);
+                ctx.fillStyle = `rgb(${sh},${sh},${sh})`;
+                ctx.fillRect(x + 1, y + h - 2, actualW - 2, 1);
+                ctx.fillRect(x + actualW - 2, y + 1, 1, h - 2);
+
+                x += actualW;
+                ci++;
             }
         }
 
-        this.addSurfaceNoise(ctx, width, height, 4);
+        this.addSurfaceNoise(ctx, width, height, 3);
     }
 }

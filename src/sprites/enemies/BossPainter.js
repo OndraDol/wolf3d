@@ -29,7 +29,8 @@ export class BossPainter extends SpritePainter {
         const isDeath = state === 'death';
         const isWalk = state === 'walk';
         const isPain = state === 'pain';
-        const uniform = isPain ? '#cfd4da' : '#334255';
+        // Original Wolf3D Hans Grosse: gray-green armor/uniform
+        const uniform = isPain ? '#cfd4da' : '#506050';
 
         if (!isBack) {
             ctx.fillStyle = '#d2a07a';

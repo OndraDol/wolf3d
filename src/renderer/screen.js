@@ -23,9 +23,9 @@ export class Screen {
         // Uint32Array view — zápis celého RGBA pixelu najednou
         this.pixels = new Uint32Array(this.imageData.data.buffer);
 
-        // Barvy pro strop a podlahu (ABGR formát kvůli little-endian)
-        this.ceilingColor = 0xFF383838; // dark gray ceiling
-        this.floorColor = 0xFF555555;   // gray floor
+        // Original Wolf3D colors (ABGR format, little-endian)
+        this.ceilingColor = 0xFF2C2C2C; // dark gray ceiling (original Wolf3D)
+        this.floorColor = 0xFF666666;   // lighter gray floor (original Wolf3D)
     }
 
     /** Vyčisti buffer — strop nahoře, podlaha dole, status bar area black */

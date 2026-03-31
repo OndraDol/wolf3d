@@ -4,8 +4,11 @@
 
 import { getTexture, TEX_SIZE } from '../procedural/textures.js';
 
-const FOG_NEAR = 3;
-const FOG_FAR = 10;
+// Original Wolf3D used subtle distance darkening, not heavy fog.
+// Walls darken gently — never fade to pure black.
+const FOG_NEAR = 4;
+const FOG_FAR = 16;
+const FOG_MAX = 0.65; // max darkening — walls never go fully black
 
 function shadeColor(color, brightness) {
     const r = color & 0xFF;
@@ -21,7 +24,7 @@ function shadeColor(color, brightness) {
 }
 
 function applyFog(color, distance) {
-    const fogAmount = Math.max(0, Math.min(1, (distance - FOG_NEAR) / (FOG_FAR - FOG_NEAR)));
+    const fogAmount = Math.min(FOG_MAX, Math.max(0, (distance - FOG_NEAR) / (FOG_FAR - FOG_NEAR)) * FOG_MAX);
     if (fogAmount <= 0) {
         return color;
     }

@@ -30,7 +30,8 @@ export class DogPainter extends SpritePainter {
         const isWalk = state === 'walk';
         const step = isWalk ? (frameIndex === 0 ? 2 : -2) : 0;
 
-        ctx.fillStyle = '#6a4a2b';
+        // Original Wolf3D German Shepherd: tan-brown body
+        ctx.fillStyle = '#8a6838';
         if (isDeath) {
             ctx.beginPath();
             ctx.ellipse(30, 40 + frameIndex * 2, 16, 8, -0.18, 0, Math.PI * 2);

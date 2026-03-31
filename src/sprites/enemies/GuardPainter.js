@@ -29,7 +29,8 @@ export class GuardPainter extends SpritePainter {
         const isPain = state === 'pain';
         const isDeath = state === 'death';
         const isWalk = state === 'walk';
-        const uniform = isPain ? '#d9c7c0' : '#6b4226';
+        // Original Wolf3D guard: warm tan-brown uniform
+        const uniform = isPain ? '#d9c7c0' : '#7a5428';
         const bodyY = isDeath ? 34 + frameIndex * 4 : 18 + (isWalk && frameIndex === 1 ? 1 : 0) + (isRight ? 2 : 0);
         const bodyH = isDeath ? Math.max(8, 14 - frameIndex * 4) : (isRight ? (isDiagonal ? 21 : 20) : 22);
         const headY = isDeath ? 28 + frameIndex * 6 : 8;

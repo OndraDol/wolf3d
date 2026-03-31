@@ -29,7 +29,8 @@ export class CommanderPainter extends SpritePainter {
         const isPain = state === 'pain';
         const isWalk = state === 'walk';
         const isDeath = state === 'death';
-        const uniform = isPain ? '#f0dada' : '#7b1e1e';
+        // Original Wolf3D officer: white/light gray uniform
+        const uniform = isPain ? '#f0dada' : '#d8d0c0';
 
         ctx.fillStyle = '#f0d8c0';
         if (!isBack) {

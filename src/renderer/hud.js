@@ -48,35 +48,23 @@ function generateStatusBarBackground(width, height) {
     canvas.height = height;
     const ctx = canvas.getContext('2d');
 
-    // Gray stone texture — like original Wolf3D status bar
-    ctx.fillStyle = '#505050';
+    // Original Wolf3D status bar: blue-gray / teal solid color
+    // The original used palette color ~(0,56,56) which is a dark teal-gray
+    ctx.fillStyle = '#29444a';
     ctx.fillRect(0, 0, width, height);
 
-    // Stone block pattern
-    const blockH = 10;
-    for (let row = 0; row < Math.ceil(height / blockH); row++) {
-        const y = row * blockH;
-        const offset = row % 2 === 0 ? 0 : 16;
-        for (let x = offset - 16; x < width; x += 32) {
-            const shade = 68 + Math.floor(Math.sin(x * 0.3 + row * 1.7) * 12);
-            ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
-            ctx.fillRect(x + 1, y + 1, 30, blockH - 2);
-            // Highlight top/left
-            ctx.fillStyle = `rgba(255,255,255,0.06)`;
-            ctx.fillRect(x + 1, y + 1, 30, 1);
-            ctx.fillRect(x + 1, y + 1, 1, blockH - 2);
-            // Shadow bottom/right
-            ctx.fillStyle = `rgba(0,0,0,0.12)`;
-            ctx.fillRect(x + 1, y + blockH - 2, 30, 1);
-            ctx.fillRect(x + 30, y + 1, 1, blockH - 2);
-        }
+    // Subtle horizontal banding for texture feel
+    for (let y = 0; y < height; y += 2) {
+        const shade = y % 4 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+        ctx.fillStyle = shade;
+        ctx.fillRect(0, y, width, 1);
     }
 
-    // Surface noise
+    // Light surface noise
     const imageData = ctx.getImageData(0, 0, width, height);
     const data = imageData.data;
     for (let i = 0; i < data.length; i += 4) {
-        const jitter = Math.round((Math.random() * 2 - 1) * 4);
+        const jitter = Math.round((Math.random() * 2 - 1) * 3);
         data[i] = Math.max(0, Math.min(255, data[i] + jitter));
         data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + jitter));
         data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + jitter));
@@ -90,25 +78,25 @@ function generateStatusBarBackground(width, height) {
 /* ─── 3D beveled section drawing ─────────────────────────────── */
 
 function drawBeveledSection(ctx, x, y, w, h) {
-    // Dark inset background
-    ctx.fillStyle = '#2a2a2a';
+    // Dark inset background (darker teal)
+    ctx.fillStyle = '#0e1e22';
     ctx.fillRect(x, y, w, h);
 
-    // Top-left highlight (raised outer bevel)
-    ctx.fillStyle = '#8a8a8a';
+    // Top-left highlight (raised outer bevel — lighter teal)
+    ctx.fillStyle = '#4a6a72';
     ctx.fillRect(x, y, w, 2);
     ctx.fillRect(x, y, 2, h);
 
-    // Bottom-right shadow (raised outer bevel)
-    ctx.fillStyle = '#1a1a1a';
+    // Bottom-right shadow
+    ctx.fillStyle = '#0a1416';
     ctx.fillRect(x, y + h - 2, w, 2);
     ctx.fillRect(x + w - 2, y, 2, h);
 
-    // Inner bevel
-    ctx.fillStyle = '#3a3a3a';
+    // Inner subtle bevel
+    ctx.fillStyle = '#1a2e32';
     ctx.fillRect(x + 2, y + 2, w - 4, 1);
     ctx.fillRect(x + 2, y + 2, 1, h - 4);
-    ctx.fillStyle = '#4a4a4a';
+    ctx.fillStyle = '#142428';
     ctx.fillRect(x + 2, y + h - 3, w - 4, 1);
     ctx.fillRect(x + w - 3, y + 2, 1, h - 4);
 }
@@ -215,10 +203,10 @@ function drawStatusBar(ctx, canvasWidth, canvasHeight, gameState) {
     const bg = generateStatusBarBackground(canvasWidth, barH);
     ctx.drawImage(bg, 0, barTop);
 
-    // Gold border at top
-    ctx.fillStyle = '#b8860b';
+    // Top border — lighter teal highlight, then dark line (original Wolf3D style)
+    ctx.fillStyle = '#4a6a72';
     ctx.fillRect(0, barTop, canvasWidth, 2);
-    ctx.fillStyle = '#daa520';
+    ctx.fillStyle = '#5a8088';
     ctx.fillRect(0, barTop, canvasWidth, 1);
 
     // Layout sections (original Wolf3D order):
@@ -229,17 +217,17 @@ function drawStatusBar(ctx, canvasWidth, canvasHeight, gameState) {
 
     // Section 1: FLOOR
     drawBeveledSection(ctx, 8, sectionY, 72, sectionH);
-    drawPixelText(ctx, 'FLOOR', 16, sectionY + 4, 1.3, '#aaaaaa');
+    drawPixelText(ctx, 'FLOOR', 16, sectionY + 4, 1.3, '#7ab0b8');
     drawPixelNumber(ctx, gameState.currentLevelNumber, 24, sectionY + 22, 3, '#ffffff', 2);
 
     // Section 2: SCORE
     drawBeveledSection(ctx, 86, sectionY, 112, sectionH);
-    drawPixelText(ctx, 'SCORE', 94, sectionY + 4, 1.3, '#aaaaaa');
+    drawPixelText(ctx, 'SCORE', 94, sectionY + 4, 1.3, '#7ab0b8');
     drawPixelNumber(ctx, gameState.score, 94, sectionY + 22, 3, '#ffffff', 7);
 
     // Section 3: LIVES
     drawBeveledSection(ctx, 204, sectionY, 58, sectionH);
-    drawPixelText(ctx, 'LIVES', 212, sectionY + 4, 1.3, '#aaaaaa');
+    drawPixelText(ctx, 'LIVES', 212, sectionY + 4, 1.3, '#7ab0b8');
     drawPixelNumber(ctx, gameState.lives, 224, sectionY + 22, 3, '#ffffff');
 
     // Section 4: BJ Face (center)
@@ -251,7 +239,7 @@ function drawStatusBar(ctx, canvasWidth, canvasHeight, gameState) {
     // Section 5: HEALTH
     const healthX = faceX + faceSize + 14;
     drawBeveledSection(ctx, healthX, sectionY, 80, sectionH);
-    drawPixelText(ctx, 'HEALTH', healthX + 8, sectionY + 4, 1.3, '#aaaaaa');
+    drawPixelText(ctx, 'HEALTH', healthX + 8, sectionY + 4, 1.3, '#7ab0b8');
     const healthStr = String(gameState.health);
     drawPixelNumber(ctx, gameState.health, healthX + 10, sectionY + 22, 3, '#ffffff');
     // % sign
@@ -260,13 +248,13 @@ function drawStatusBar(ctx, canvasWidth, canvasHeight, gameState) {
     // Section 6: AMMO
     const ammoX = healthX + 86;
     drawBeveledSection(ctx, ammoX, sectionY, 62, sectionH);
-    drawPixelText(ctx, 'AMMO', ammoX + 8, sectionY + 4, 1.3, '#aaaaaa');
+    drawPixelText(ctx, 'AMMO', ammoX + 8, sectionY + 4, 1.3, '#7ab0b8');
     drawPixelNumber(ctx, gameState.ammo, ammoX + 12, sectionY + 22, 3, '#ffffff', 2);
 
     // Section 7: KEYS
     const keysX = ammoX + 68;
     drawBeveledSection(ctx, keysX, sectionY, 54, sectionH);
-    drawPixelText(ctx, 'KEYS', keysX + 8, sectionY + 4, 1.3, '#aaaaaa');
+    drawPixelText(ctx, 'KEYS', keysX + 8, sectionY + 4, 1.3, '#7ab0b8');
     // Gold key
     if (gameState.keys.has('gold')) {
         drawSprite(ctx, 'ui_key_gold_0', keysX + 6, sectionY + 24, 20, 32);
@@ -281,7 +269,7 @@ function drawStatusBar(ctx, canvasWidth, canvasHeight, gameState) {
     const weaponW = canvasWidth - weaponX - 8;
     drawBeveledSection(ctx, weaponX, sectionY, weaponW, sectionH);
     const weapon = getWeapon(gameState.weapon);
-    drawPixelText(ctx, weapon.label, weaponX + 8, sectionY + 4, 1.3, '#aaaaaa');
+    drawPixelText(ctx, weapon.label, weaponX + 8, sectionY + 4, 1.3, '#7ab0b8');
     // Small weapon sprite
     const wKey = `weapon_${weapon.id}_idle_0`;
     drawSprite(ctx, wKey, weaponX + 8, sectionY + 14, weaponW - 16, sectionH - 22);

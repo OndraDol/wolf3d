@@ -1,66 +1,71 @@
 import { TexturePainter } from '../TexturePainter.js';
 
 /**
- * Tile 3 — Wood panel wall (faithful to original Wolf3D).
- * Vertical wood planks, warm tan-brown with visible panel borders.
- * Horizontal cross-beam at center.
+ * Tile 3 — Wood panel wall — exact copy of original Wolf3D.
+ * Original: "Wood with Beige Trim". Vertical planks ~10px wide,
+ * beige/tan color (VGA ~140-168, 100-116, 56-72), dark groove lines
+ * between planks, two horizontal dark metal bands.
  */
 export class WoodPainter extends TexturePainter {
     paint(ctx, width, height) {
-        // Base wood grain
-        this.drawWoodGrain(ctx, width, height, '#7a5530', '#9a6a40');
+        // Base wood color
+        this.clear(ctx, width, height, '#6a4a2a');
 
-        const plankWidth = 10;
-        for (let x = 0; x < width; x += plankWidth) {
-            const r = 110 + Math.floor(this.hash(x, 0, 1) * 30) - 15;
-            const g = 76 + Math.floor(this.hash(x, 0, 2) * 20) - 10;
-            const b = 42 + Math.floor(this.hash(x, 0, 3) * 16) - 8;
+        const plankW = 10;
 
+        // Draw vertical planks
+        for (let i = 0; i < Math.ceil(width / plankW); i++) {
+            const x = i * plankW;
+            const v = this.hash(i, 0, 3);
+            const r = 144 + Math.floor(v * 28);
+            const g = 100 + Math.floor(v * 20);
+            const b = 56 + Math.floor(v * 16);
+
+            // Plank face
             ctx.fillStyle = `rgb(${r},${g},${b})`;
-            ctx.fillRect(x, 0, plankWidth - 1, height);
+            ctx.fillRect(x + 1, 0, plankW - 2, height);
 
             // Left edge highlight
             ctx.fillStyle = `rgb(${Math.min(255, r + 20)},${Math.min(255, g + 14)},${Math.min(255, b + 10)})`;
+            ctx.fillRect(x + 1, 0, 1, height);
+
+            // Right edge dark groove
+            ctx.fillStyle = `rgb(${Math.max(0, r - 48)},${Math.max(0, g - 36)},${Math.max(0, b - 24)})`;
+            ctx.fillRect(x + plankW - 1, 0, 1, height);
+            // Dark mortar line
+            ctx.fillStyle = '#2a1c0c';
             ctx.fillRect(x, 0, 1, height);
 
-            // Right edge shadow (dark groove)
-            ctx.fillStyle = `rgb(${Math.max(0, r - 40)},${Math.max(0, g - 30)},${Math.max(0, b - 20)})`;
-            ctx.fillRect(x + plankWidth - 1, 0, 1, height);
-
-            // Wood knots
-            if (this.hash(x, width, 17) > 0.72) {
-                const knotY = 10 + Math.floor(this.hash(x, 4, 21) * (height - 20));
-                ctx.fillStyle = `rgb(${Math.max(0, r - 30)},${Math.max(0, g - 24)},${Math.max(0, b - 16)})`;
+            // Subtle wood grain lines
+            ctx.save();
+            ctx.globalAlpha = 0.12;
+            ctx.strokeStyle = `rgb(${r + 20},${g + 10},${b + 6})`;
+            ctx.lineWidth = 1;
+            for (let gy = 3; gy < height; gy += 4) {
+                const wave = Math.sin((x * 0.15) + (gy * 0.2) + i * 2.3) * 0.8;
                 ctx.beginPath();
-                ctx.ellipse(x + plankWidth / 2, knotY, 2.5, 4.5, 0, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.moveTo(x + 2, gy + wave);
+                ctx.lineTo(x + plankW - 2, gy + wave);
+                ctx.stroke();
             }
+            ctx.restore();
         }
 
-        // Horizontal cross-beam at 1/3 and 2/3 height
-        ctx.fillStyle = '#4a3018';
-        ctx.fillRect(0, Math.floor(height / 3) - 2, width, 4);
-        ctx.fillRect(0, Math.floor(height * 2 / 3) - 2, width, 4);
-        ctx.fillStyle = 'rgba(255,255,255,0.1)';
-        ctx.fillRect(0, Math.floor(height / 3) - 2, width, 1);
-        ctx.fillRect(0, Math.floor(height * 2 / 3) - 2, width, 1);
+        // Horizontal metal bands (original Wolf3D "beige trim" = dark horizontal strips)
+        const bandColor = '#3a2810';
+        const bandHi = '#5a4020';
+        ctx.fillStyle = bandColor;
+        ctx.fillRect(0, 20, width, 4);
+        ctx.fillRect(0, 42, width, 4);
+        // Band highlight
+        ctx.fillStyle = bandHi;
+        ctx.fillRect(0, 20, width, 1);
+        ctx.fillRect(0, 42, width, 1);
+        // Band shadow
+        ctx.fillStyle = '#1a1008';
+        ctx.fillRect(0, 23, width, 1);
+        ctx.fillRect(0, 45, width, 1);
 
-        // Subtle grain overlay
-        ctx.save();
-        ctx.globalAlpha = 0.14;
-        ctx.strokeStyle = '#a07040';
-        ctx.lineWidth = 1;
-        for (let band = 3; band < height; band += 5) {
-            ctx.beginPath();
-            for (let x = 0; x <= width; x += 2) {
-                const wave = Math.sin((x * 0.18) + (band * 0.2)) * 1.2;
-                if (x === 0) ctx.moveTo(x, band + wave);
-                else ctx.lineTo(x, band + wave);
-            }
-            ctx.stroke();
-        }
-        ctx.restore();
-
-        this.addSurfaceNoise(ctx, width, height, 4);
+        this.addSurfaceNoise(ctx, width, height, 3);
     }
 }
