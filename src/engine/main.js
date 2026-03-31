@@ -3,7 +3,7 @@
  */
 
 import { Enemy } from '../ai/enemy.js';
-import { initAudio, playSound } from '../audio/synth.js';
+import { initAudio, playSound, startMusic, stopMusic } from '../audio/synth.js';
 import { GameState } from '../game/state.js';
 import { getLevel, loadLevel } from '../game/level.js';
 import { getWeapon, getWeaponBySlot, WEAPON_ORDER } from '../game/weapons.js';
@@ -175,9 +175,11 @@ function loop(timestamp) {
 function startRun() {
     loadWorld(runStartLevelId, { preservePlayerState: false, status: 'playing' });
     playSound('start-game');
+    startMusic();
 }
 
 function restartRun() {
+    stopMusic();
     gameState.resetRun();
     loadWorld(runStartLevelId, { preservePlayerState: false, status: 'title' });
 }
@@ -380,7 +382,34 @@ function handleWeaponSelection() {
     }
 }
 
+function handlePauseMenu() {
+    if (!gameState.paused) return;
+
+    if (input.consumePressed('ArrowUp') || input.consumePressed('KeyW')) {
+        gameState.pauseCursor = ((gameState.pauseCursor ?? 0) - 1 + 3) % 3;
+    }
+    if (input.consumePressed('ArrowDown') || input.consumePressed('KeyS')) {
+        gameState.pauseCursor = ((gameState.pauseCursor ?? 0) + 1) % 3;
+    }
+    if (input.consumeAnyPressed(START_KEYS)) {
+        switch (gameState.pauseCursor ?? 0) {
+            case 0: // Continue
+                gameState.paused = false;
+                break;
+            case 1: // Help
+                gameState.showHelp = true;
+                break;
+            case 2: // Back to menu
+                gameState.paused = false;
+                restartRun();
+                break;
+        }
+    }
+}
+
 function handleShellInput() {
+    handlePauseMenu();
+
     if (input.consumePressed('Escape')) {
         if (gameState.showHelp) {
             gameState.closeShellOverlay();

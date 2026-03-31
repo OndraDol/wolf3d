@@ -680,17 +680,50 @@ function drawVictoryOverlay(ctx, canvasWidth, canvasHeight, gameState) {
     ctx.textAlign = 'start';
 }
 
-function drawPauseOverlay(ctx, canvasWidth, canvasHeight, level) {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.42)';
+function drawPauseOverlay(ctx, canvasWidth, canvasHeight, gameState, level) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    const panel = drawCenteredPanel(ctx, canvasWidth, canvasHeight, 380, 136);
-    ctx.fillStyle = '#fff6ce';
-    ctx.font = 'bold 24px monospace';
+
+    const menuW = 320;
+    const menuH = 200;
+    const menuX = (canvasWidth - menuW) / 2;
+    const menuY = (canvasHeight - menuH) / 2;
+
+    // Dark teal panel
+    ctx.fillStyle = '#1a3040';
+    ctx.fillRect(menuX, menuY, menuW, menuH);
+    ctx.fillStyle = '#4a7888';
+    ctx.fillRect(menuX, menuY, menuW, 2);
+    ctx.fillRect(menuX, menuY, 2, menuH);
+    ctx.fillStyle = '#0a1018';
+    ctx.fillRect(menuX, menuY + menuH - 2, menuW, 2);
+    ctx.fillRect(menuX + menuW - 2, menuY, 2, menuH);
+
+    ctx.fillStyle = '#d0a030';
+    ctx.font = 'bold 28px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('PAUSED', panel.left + 190, panel.top + 42);
-    ctx.font = '13px monospace';
-    ctx.fillText(level?.metadata?.primaryObjective ?? 'Resume when ready.', panel.left + 190, panel.top + 74);
-    ctx.fillText('Esc resume  H open help', panel.left + 190, panel.top + 100);
+    ctx.fillText('PAUSED', canvasWidth / 2, menuY + 36);
+
+    const items = ['CONTINUE', 'HELP', 'BACK TO MENU'];
+    const pauseCursor = gameState.pauseCursor ?? 0;
+
+    ctx.font = 'bold 18px monospace';
+    for (let i = 0; i < items.length; i++) {
+        const y = menuY + 65 + i * 36;
+        if (i === pauseCursor) {
+            ctx.fillStyle = '#2a5060';
+            ctx.fillRect(menuX + 10, y - 4, menuW - 20, 28);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText('\u25B6  ' + items[i], canvasWidth / 2, y + 16);
+        } else {
+            ctx.fillStyle = '#8aa0b0';
+            ctx.fillText(items[i], canvasWidth / 2, y + 16);
+        }
+    }
+
+    ctx.font = '11px monospace';
+    ctx.fillStyle = '#506878';
+    ctx.fillText('Arrow Keys + Enter  |  Esc to resume', canvasWidth / 2, menuY + menuH - 12);
     ctx.textAlign = 'start';
 }
 
@@ -773,7 +806,7 @@ export function drawHUD(ctx, frame) {
     }
 
     if (gameState.paused) {
-        drawPauseOverlay(ctx, canvasWidth, canvasHeight, level);
+        drawPauseOverlay(ctx, canvasWidth, canvasHeight, gameState, level);
     }
     if (gameState.showHelp) {
         drawHelpOverlay(ctx, canvasWidth, canvasHeight, level);

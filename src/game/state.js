@@ -67,8 +67,10 @@ export class GameState {
         this.pickupFlash = 0;
         this.screenFade = 0;
         this.paused = false;
+        this.pauseCursor = 0;
         this.showHelp = false;
         this.showMinimap = false;
+        this.extraLifeAwarded = false;
         this.levelTime = 0;
         this.enemiesTotal = 0;
         this.killsInLevel = 0;

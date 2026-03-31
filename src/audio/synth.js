@@ -161,3 +161,73 @@ export function playSound(name) {
         // Audio is optional feedback. Ignore browser/audio init failures.
     }
 }
+
+/* ─── Background Music ───────────────────────────────────────── */
+
+let musicOscillators = [];
+let musicPlaying = false;
+let musicInterval = null;
+
+// Simple E minor loop inspired by Wolf3D's marching theme
+const MUSIC_NOTES = [
+    164.81, 196.00, 246.94, 196.00,  // E3 G3 B3 G3
+    164.81, 220.00, 261.63, 220.00,  // E3 A3 C4 A3
+    146.83, 196.00, 246.94, 196.00,  // D3 G3 B3 G3
+    164.81, 196.00, 164.81, 130.81,  // E3 G3 E3 C3
+];
+
+const BASS_NOTES = [
+    82.41, 82.41, 82.41, 82.41,     // E2
+    110.00, 110.00, 110.00, 110.00,  // A2
+    73.42, 73.42, 73.42, 73.42,     // D2
+    82.41, 82.41, 65.41, 65.41,     // E2 C2
+];
+
+export function startMusic() {
+    if (musicPlaying || !audioCtx) return;
+    musicPlaying = true;
+
+    let noteIndex = 0;
+    const bpm = 140;
+    const noteLength = 60 / bpm;
+
+    musicInterval = setInterval(() => {
+        if (!audioCtx || audioCtx.state !== 'running') return;
+
+        const now = audioCtx.currentTime;
+
+        // Melody
+        const melOsc = audioCtx.createOscillator();
+        const melGain = audioCtx.createGain();
+        melOsc.type = 'square';
+        melOsc.frequency.setValueAtTime(MUSIC_NOTES[noteIndex % MUSIC_NOTES.length], now);
+        melGain.gain.setValueAtTime(0.03, now);
+        melGain.gain.exponentialRampToValueAtTime(0.001, now + noteLength * 0.9);
+        melOsc.connect(melGain);
+        melGain.connect(audioCtx.destination);
+        melOsc.start(now);
+        melOsc.stop(now + noteLength);
+
+        // Bass
+        const bassOsc = audioCtx.createOscillator();
+        const bassGain = audioCtx.createGain();
+        bassOsc.type = 'triangle';
+        bassOsc.frequency.setValueAtTime(BASS_NOTES[noteIndex % BASS_NOTES.length], now);
+        bassGain.gain.setValueAtTime(0.04, now);
+        bassGain.gain.exponentialRampToValueAtTime(0.001, now + noteLength * 0.9);
+        bassOsc.connect(bassGain);
+        bassGain.connect(audioCtx.destination);
+        bassOsc.start(now);
+        bassOsc.stop(now + noteLength);
+
+        noteIndex++;
+    }, noteLength * 1000);
+}
+
+export function stopMusic() {
+    musicPlaying = false;
+    if (musicInterval) {
+        clearInterval(musicInterval);
+        musicInterval = null;
+    }
+}
