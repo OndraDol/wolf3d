@@ -2,24 +2,25 @@ import { TexturePainter } from '../TexturePainter.js';
 
 export class BrickWallPainter extends TexturePainter {
     paint(ctx, width, height) {
-        this.clear(ctx, width, height, '#383838');
+        // Dark brown mortar background
+        this.clear(ctx, width, height, '#401808');
 
-        const brickWidth = 8;
-        const brickHeight = 16;
+        const brickWidth = 16;
+        const brickHeight = 8;
         const aoRects = [];
 
-        for (let row = 0; row < 4; row++) {
+        for (let row = 0; row < 8; row++) {
             const y = row * brickHeight;
             const offset = row % 2 === 1 ? brickWidth / 2 : 0;
 
-            for (let column = -1; column < 8; column++) {
+            for (let column = -1; column < 5; column++) {
                 const x = (column * brickWidth) + offset;
                 if (x <= -brickWidth || x >= width) {
                     continue;
                 }
 
-                const baseColor = this.jitterColor('#676767', 10, row * 31 + column * 17);
-                const worn = this.hash(column, row, 7) > 0.82 ? this.adjustColor(baseColor, 0.14) : baseColor;
+                // Vivid red bricks #A83020 to #C84030
+                const baseColor = this.jitterColor('#B43028', 16, row * 31 + column * 17);
                 const brickX = Math.max(0, x + 1);
                 const brickY = y + 1;
                 const brickW = Math.min(brickWidth - 1, width - brickX);
@@ -28,13 +29,12 @@ export class BrickWallPainter extends TexturePainter {
                     continue;
                 }
 
-                this.drawBrick(ctx, brickX, brickY, brickW, brickH, worn, 0.16);
+                this.drawBrick(ctx, brickX, brickY, brickW, brickH, baseColor, 0.18);
                 aoRects.push({ x: brickX, y: brickY, w: brickW, h: brickH });
             }
         }
 
-        this.addAmbientOcclusion(ctx, aoRects, 0.1);
-        this.addSurfaceNoise(ctx, width, height, 5);
+        this.addAmbientOcclusion(ctx, aoRects, 0.08);
+        this.addSurfaceNoise(ctx, width, height, 4);
     }
 }
-

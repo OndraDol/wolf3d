@@ -47,47 +47,121 @@ export class UIPainter extends SpritePainter {
 
     paintFace(ctx, key) {
         const mood = key.replace('ui_face_', '').replace('_0', '');
+
+        // Skin colors per mood
         const skin = mood === 'pain'
             ? '#efc5c5'
             : (mood === 'critical' ? '#b47a63' : (mood === 'wounded' ? '#c69168' : '#d9a57b'));
-        const uniform = mood === 'pain' ? '#455b79' : '#324760';
-        const browTilt = mood === 'healthy' ? 0 : (mood === 'wounded' ? 1 : 2);
-        const mouthY = mood === 'healthy' ? 43 : (mood === 'wounded' ? 45 : 47);
-        const mouthWidth = mood === 'critical' ? 16 : 12;
+        const skinDark = mood === 'pain'
+            ? '#d0a0a0'
+            : (mood === 'critical' ? '#8a5a43' : (mood === 'wounded' ? '#a07048' : '#b0854b'));
+        const uniform = '#324760';
+        const uniformDark = '#1a2c42';
 
-        this.drawShadowEllipse(ctx, 32, 56, 18, 5, 0.18);
+        // Background — dark border
         ctx.fillStyle = '#1a2330';
-        ctx.fillRect(12, 12, 40, 46);
-        ctx.fillStyle = uniform;
-        ctx.fillRect(18, 34, 28, 18);
+        ctx.fillRect(10, 8, 44, 52);
 
-        ctx.fillStyle = skin;
+        // Blue uniform collar at bottom
+        ctx.fillStyle = uniformDark;
+        ctx.fillRect(16, 46, 32, 14);
+        ctx.fillStyle = uniform;
+        ctx.fillRect(18, 46, 28, 12);
+        // Collar V-shape
+        ctx.fillStyle = skinDark;
         ctx.beginPath();
-        ctx.ellipse(32, 29, 14, 17, 0, 0, Math.PI * 2);
+        ctx.moveTo(28, 46);
+        ctx.lineTo(32, 52);
+        ctx.lineTo(36, 46);
+        ctx.closePath();
         ctx.fill();
 
-        ctx.fillStyle = '#3b2617';
-        ctx.fillRect(19, 14, 26, 6);
-        ctx.fillRect(20, 18, 4, 4);
-        ctx.fillRect(40, 18, 4, 4);
+        // Face oval (head shape)
+        ctx.fillStyle = skin;
+        ctx.beginPath();
+        ctx.ellipse(32, 30, 13, 16, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-        ctx.fillStyle = '#241810';
-        ctx.fillRect(22, 25 + browTilt, 7, 2);
-        ctx.fillRect(35, 25 + browTilt, 7, 2);
-        ctx.fillRect(24, 30, 4, 3);
-        ctx.fillRect(37, 30, 4, 3);
-        ctx.fillRect(31, 34, 2, 5);
-        ctx.fillRect(26, mouthY, mouthWidth, 2);
+        // Flat-top haircut — BJ's signature look
+        ctx.fillStyle = '#6B4422';
+        // Flat top block of hair
+        ctx.fillRect(19, 12, 26, 8);
+        // Side hair
+        ctx.fillRect(18, 14, 4, 12);
+        ctx.fillRect(42, 14, 4, 12);
+        // Hair highlight
+        ctx.fillStyle = '#8B6442';
+        ctx.fillRect(21, 12, 22, 3);
 
-        if (mood === 'critical') {
-            ctx.fillStyle = '#7f1f1f';
-            ctx.fillRect(40, 34, 3, 2);
+        // Forehead shadow under hair
+        ctx.fillStyle = skinDark;
+        ctx.fillRect(22, 19, 20, 2);
+
+        // Eyes — with whites and pupils
+        // Eye whites
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(23, 26, 6, 4);
+        ctx.fillRect(35, 26, 6, 4);
+        // Irises (blue)
+        ctx.fillStyle = '#4070B0';
+        ctx.fillRect(25, 26, 3, 4);
+        ctx.fillRect(37, 26, 3, 4);
+        // Pupils
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(26, 27, 2, 2);
+        ctx.fillRect(38, 27, 2, 2);
+
+        // Eyebrows
+        const browTilt = mood === 'healthy' ? 0 : (mood === 'wounded' ? 1 : 2);
+        ctx.fillStyle = '#4a2e16';
+        ctx.fillRect(22, 23 - browTilt, 8, 2);
+        ctx.fillRect(34, 23 - browTilt, 8, 2);
+
+        // Nose
+        ctx.fillStyle = skinDark;
+        ctx.fillRect(30, 31, 4, 5);
+        ctx.fillStyle = skin;
+        ctx.fillRect(31, 31, 2, 4);
+
+        // Mouth — changes with health state
+        if (mood === 'healthy') {
+            // Slight grin
+            ctx.fillStyle = '#8B3030';
+            ctx.fillRect(27, 39, 10, 2);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(28, 39, 8, 1);
+        } else if (mood === 'wounded') {
+            // Neutral/tense
+            ctx.fillStyle = '#7a2828';
+            ctx.fillRect(26, 40, 12, 2);
+        } else if (mood === 'critical') {
+            // Open mouth (pain/grimace)
+            ctx.fillStyle = '#5a1818';
+            ctx.fillRect(25, 40, 14, 4);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(27, 40, 10, 1);
+            // Blood
+            ctx.fillStyle = '#8B1010';
+            ctx.fillRect(40, 35, 3, 3);
+        } else {
+            // Pain — mouth open, teeth showing
+            ctx.fillStyle = '#5a1818';
+            ctx.fillRect(24, 39, 16, 5);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(26, 39, 12, 2);
+            // Pain border flash
+            ctx.fillStyle = '#ff4444';
+            ctx.globalAlpha = 0.3;
+            ctx.fillRect(10, 8, 44, 2);
+            ctx.fillRect(10, 8, 2, 52);
+            ctx.fillRect(52, 8, 2, 52);
+            ctx.globalAlpha = 1.0;
         }
-        if (mood === 'pain') {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(13, 13, 38, 2);
-            ctx.fillRect(13, 13, 2, 38);
-        }
+
+        // Ear hints
+        ctx.fillStyle = skinDark;
+        ctx.fillRect(18, 26, 3, 6);
+        ctx.fillRect(43, 26, 3, 6);
     }
 
     paintKeyIcon(ctx, key) {

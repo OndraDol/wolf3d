@@ -1,21 +1,11 @@
 /**
  * HUD, title shell and flow overlays drawn on top of the pixel scene.
+ * Status bar styled to match original Wolfenstein 3D (1992).
  */
 
 import { getWeapon, WEAPON_ORDER } from '../game/weapons.js';
 import { DIFFICULTY, DIFFICULTY_ORDER } from '../game/state.js';
 import { spriteGenerator } from '../sprites/SpriteGenerator.js';
-
-function formatKeys(keys) {
-    const parts = [];
-    if (keys.has('gold')) {
-        parts.push('GOLD');
-    }
-    if (keys.has('silver')) {
-        parts.push('SILVER');
-    }
-    return parts.length > 0 ? parts.join(' / ') : '--';
-}
 
 function formatTime(seconds) {
     const total = Math.max(0, Math.floor(seconds));
@@ -84,125 +74,105 @@ function drawWeapon(ctx, canvasWidth, canvasHeight, gameState) {
     drawSprite(ctx, key, drawX, drawY, width, height);
 }
 
-function drawCrosshair(ctx, canvasWidth, canvasHeight, gameState) {
-    const canFire = gameState.canFire() && gameState.ammo >= getWeapon(gameState.weapon).ammoCost;
-    ctx.strokeStyle = canFire ? 'rgba(255,255,255,0.78)' : 'rgba(255,128,128,0.78)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(canvasWidth / 2 - 8, canvasHeight / 2);
-    ctx.lineTo(canvasWidth / 2 + 8, canvasHeight / 2);
-    ctx.moveTo(canvasWidth / 2, canvasHeight / 2 - 8);
-    ctx.lineTo(canvasWidth / 2, canvasHeight / 2 + 8);
-    ctx.stroke();
+// Draw beveled border section (Wolf3D style 3D beveled look)
+function drawBeveledSection(ctx, x, y, w, h) {
+    // Main background
+    ctx.fillStyle = '#0000A8';
+    ctx.fillRect(x, y, w, h);
+    // Highlight (top, left)
+    ctx.fillStyle = '#0000D8';
+    ctx.fillRect(x, y, w, 2);
+    ctx.fillRect(x, y, 2, h);
+    // Shadow (bottom, right)
+    ctx.fillStyle = '#000078';
+    ctx.fillRect(x, y + h - 2, w, 2);
+    ctx.fillRect(x + w - 2, y, 2, h);
 }
 
-function drawTopStrip(ctx, canvasWidth, gameState, level) {
-    const objective = level?.metadata?.primaryObjective ?? level?.metadata?.briefing ?? '';
-    if (!objective) {
-        return;
-    }
+// Draw pixel-font style large number
+function drawLargeNumber(ctx, text, x, y) {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 22px monospace';
+    ctx.fillText(text, x, y);
+}
 
-    ctx.fillStyle = 'rgba(10, 10, 10, 0.56)';
-    ctx.fillRect(0, 0, canvasWidth, 24);
-    ctx.fillStyle = '#e4dcc2';
-    ctx.font = '12px monospace';
-    ctx.fillText(objective, 12, 16);
-    ctx.textAlign = 'right';
-    ctx.fillText(`TIME ${formatTime(gameState.levelTime)}`, canvasWidth - 12, 16);
-    ctx.textAlign = 'start';
+// Draw small label text
+function drawLabel(ctx, text, x, y) {
+    ctx.fillStyle = '#B0B0B0';
+    ctx.font = '10px monospace';
+    ctx.fillText(text, x, y);
 }
 
 function drawStatusBar(ctx, canvasWidth, canvasHeight, gameState, level) {
-    const weapon = getWeapon(gameState.weapon);
-    const loadText = weapon.ammoCost > 0 ? String(weapon.ammoCost) : '--';
-    const hudHeight = 64;
+    const hudHeight = 80;
     const top = canvasHeight - hudHeight;
 
-    const panelGradient = ctx.createLinearGradient(0, top, 0, canvasHeight);
-    panelGradient.addColorStop(0, 'rgba(18, 26, 34, 0.96)');
-    panelGradient.addColorStop(1, 'rgba(7, 10, 14, 0.98)');
-    ctx.fillStyle = panelGradient;
+    // Bright blue background (original Wolf3D #0000A8)
+    ctx.fillStyle = '#0000A8';
     ctx.fillRect(0, top, canvasWidth, hudHeight);
-    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-    ctx.beginPath();
-    ctx.moveTo(0, top + 0.5);
-    ctx.lineTo(canvasWidth, top + 0.5);
-    ctx.stroke();
 
-    ctx.fillStyle = '#f2e9d4';
-    ctx.font = 'bold 14px monospace';
-    ctx.fillText(level?.name ?? 'WOLF3D', 12, top + 18);
-    ctx.font = '12px monospace';
-    ctx.fillText(formatEpisodeFloor(gameState.currentEpisodeNumber, gameState.currentLevelNumber), 12, top + 36);
-    ctx.fillText(`SCORE ${String(gameState.score).padStart(5, '0')}`, 12, top + 52);
+    // Top border highlight
+    ctx.fillStyle = '#0000D8';
+    ctx.fillRect(0, top, canvasWidth, 2);
 
-    drawSprite(ctx, 'ui_stat_health_0', 100, top + 11, 18, 18);
-    drawSprite(ctx, 'ui_stat_armor_0', 100, top + 31, 18, 18);
-    drawSprite(ctx, 'ui_stat_ammo_0', 206, top + 28, 18, 18);
+    // Section layout: FLOOR | SCORE | LIVES | [BJ FACE] | HEALTH | AMMO | WEAPON ICON
+    const sectionY = top + 6;
+    const sectionH = 68;
+    const sections = [
+        { x: 4, w: 78 },     // FLOOR
+        { x: 86, w: 100 },   // SCORE
+        { x: 190, w: 68 },   // LIVES
+        { x: 262, w: 68 },   // FACE (center)
+        { x: 334, w: 90 },   // HEALTH
+        { x: 428, w: 80 },   // AMMO
+        { x: 512, w: 124 },  // WEAPON ICON
+    ];
 
-    ctx.fillStyle = '#7d1919';
-    ctx.fillRect(122, top + 20, 118, 10);
-    ctx.fillStyle = '#c63e3e';
-    ctx.fillRect(122, top + 20, Math.max(0, Math.min(118, gameState.health * 1.18)), 10);
-    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-    ctx.strokeRect(122, top + 20, 118, 10);
-    ctx.fillStyle = '#1e335d';
-    ctx.fillRect(122, top + 36, 118, 8);
-    ctx.fillStyle = '#4b87d9';
-    ctx.fillRect(122, top + 36, Math.max(0, Math.min(118, gameState.armor * 1.18)), 8);
-    ctx.strokeStyle = 'rgba(255,255,255,0.16)';
-    ctx.strokeRect(122, top + 36, 118, 8);
-    ctx.fillStyle = '#f2e9d4';
-    ctx.fillText(`HP ${String(gameState.health).padStart(3, ' ')}`, 122, top + 48);
-    ctx.fillText(`AR ${String(gameState.armor).padStart(3, ' ')}`, 122, top + 60);
-    ctx.fillText(`AMMO ${String(gameState.ammo).padStart(2, '0')}`, 226, top + 48);
-    drawSprite(ctx, getFaceSpriteKey(gameState), 255, top + 7, 56, 56);
+    for (const sec of sections) {
+        drawBeveledSection(ctx, sec.x, sectionY, sec.w, sectionH);
+    }
 
-    drawSprite(ctx, 'ui_stat_kill_0', 312, top + 9, 14, 14);
-    drawSprite(ctx, 'ui_stat_pickup_0', 312, top + 25, 14, 14);
-    drawSprite(ctx, 'ui_stat_secret_0', 458, top + 9, 14, 14);
-    drawSprite(ctx, 'ui_stat_treasure_0', 458, top + 25, 14, 14);
+    ctx.textAlign = 'center';
 
-    ctx.fillText(`KILLS ${gameState.killsInLevel}/${gameState.enemiesTotal}`, 330, top + 22);
-    ctx.fillText(`PICKUPS ${gameState.pickupsCollected}/${gameState.pickupsTotal}`, 330, top + 38);
-    ctx.fillText(`KEYS ${formatKeys(gameState.keys)}`, 330, top + 56);
-    ctx.fillText(`SEC ${gameState.secretsInLevel}/${gameState.secretsTotal}`, 476, top + 22);
-    ctx.fillText(`TRS ${gameState.treasuresInLevel}/${gameState.treasuresTotal}`, 476, top + 38);
+    // FLOOR section
+    drawLabel(ctx, 'FLOOR', sections[0].x + sections[0].w / 2, sectionY + 16);
+    drawLargeNumber(ctx, String(gameState.currentLevelNumber || 1), sections[0].x + sections[0].w / 2, sectionY + 48);
 
+    // SCORE section
+    drawLabel(ctx, 'SCORE', sections[1].x + sections[1].w / 2, sectionY + 16);
+    drawLargeNumber(ctx, String(gameState.score).padStart(7, '0'), sections[1].x + sections[1].w / 2, sectionY + 48);
+
+    // LIVES section
+    drawLabel(ctx, 'LIVES', sections[2].x + sections[2].w / 2, sectionY + 16);
+    drawLargeNumber(ctx, String(gameState.lives ?? 3), sections[2].x + sections[2].w / 2, sectionY + 48);
+
+    // BJ FACE (center, large ~48x48)
+    const faceSection = sections[3];
+    drawSprite(ctx, getFaceSpriteKey(gameState), faceSection.x + 10, sectionY + 10, 48, 48);
+
+    // HEALTH section
+    drawLabel(ctx, 'HEALTH', sections[4].x + sections[4].w / 2, sectionY + 16);
+    drawLargeNumber(ctx, String(gameState.health) + '%', sections[4].x + sections[4].w / 2, sectionY + 48);
+
+    // AMMO section
+    drawLabel(ctx, 'AMMO', sections[5].x + sections[5].w / 2, sectionY + 16);
+    const weapon = getWeapon(gameState.weapon);
+    const ammoText = weapon.ammoCost > 0 ? String(gameState.ammo) : '--';
+    drawLargeNumber(ctx, ammoText, sections[5].x + sections[5].w / 2, sectionY + 48);
+
+    // WEAPON ICON section
+    const weaponSection = sections[6];
+    const weaponKey = `weapon_${weapon.id}_idle_0`;
+    drawSprite(ctx, weaponKey, weaponSection.x + 30, sectionY + 8, 52, 52);
+
+    // Keys display (small, below face)
     if (gameState.keys.has('gold')) {
-        drawSprite(ctx, 'ui_key_gold_0', 458, top + 42, 16, 16);
+        drawSprite(ctx, 'ui_key_gold_0', faceSection.x + 4, sectionY + 56, 12, 12);
     }
     if (gameState.keys.has('silver')) {
-        drawSprite(ctx, 'ui_key_silver_0', 476, top + 42, 16, 16);
+        drawSprite(ctx, 'ui_key_silver_0', faceSection.x + 52, sectionY + 56, 12, 12);
     }
 
-    ctx.textAlign = 'right';
-    ctx.fillText(weapon.label, canvasWidth - 12, top + 18);
-    ctx.fillText(`LOAD ${loadText}  SLOT ${weapon.slot}`, canvasWidth - 12, top + 36);
-    ctx.fillText(
-        WEAPON_ORDER.map((weaponId) => {
-            const current = weaponId === gameState.weapon ? '>' : ' ';
-            return `${current}${getWeapon(weaponId).slot}:${gameState.hasWeapon(weaponId) ? 'ON' : '--'}`;
-        }).join('  '),
-        canvasWidth - 12,
-        top + 52
-    );
-    ctx.textAlign = 'start';
-}
-
-function drawToast(ctx, canvasWidth, gameState) {
-    if (!gameState.levelMessage) {
-        return;
-    }
-
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.58)';
-    ctx.fillRect(canvasWidth / 2 - 150, 30, 300, 36);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
-    ctx.strokeRect(canvasWidth / 2 - 150, 30, 300, 36);
-    ctx.fillStyle = '#fff6ce';
-    ctx.font = 'bold 18px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(gameState.levelMessage, canvasWidth / 2, 53);
     ctx.textAlign = 'start';
 }
 
@@ -351,11 +321,9 @@ export function drawHUD(ctx, frame) {
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     }
 
-    // No crosshair — original Wolf3D had none
-    drawTopStrip(ctx, canvasWidth, gameState, level);
+    // No crosshair, no top strip, no toast — original Wolf3D had none
     drawStatusBar(ctx, canvasWidth, canvasHeight, gameState, level);
     drawWeapon(ctx, canvasWidth, canvasHeight, gameState);
-    // No toast messages — original Wolf3D had none
 
     if (gameState.levelStatus === 'title') {
         drawTitleOverlay(ctx, canvasWidth, canvasHeight, gameState, level);

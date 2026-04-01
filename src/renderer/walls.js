@@ -4,8 +4,9 @@
 
 import { getTexture, TEX_SIZE } from '../procedural/textures.js';
 
-const FOG_NEAR = 3;
-const FOG_FAR = 10;
+const FOG_NEAR = 6;
+const FOG_FAR = 20;
+const FOG_MAX = 0.50;
 
 function shadeColor(color, brightness) {
     const r = color & 0xFF;
@@ -21,7 +22,7 @@ function shadeColor(color, brightness) {
 }
 
 function applyFog(color, distance) {
-    const fogAmount = Math.max(0, Math.min(1, (distance - FOG_NEAR) / (FOG_FAR - FOG_NEAR)));
+    const fogAmount = Math.max(0, Math.min(FOG_MAX, ((distance - FOG_NEAR) / (FOG_FAR - FOG_NEAR)) * FOG_MAX));
     if (fogAmount <= 0) {
         return color;
     }
@@ -58,7 +59,7 @@ export function drawWalls(screen, frame) {
         const yEnd = Math.min(screenHeight - 1, Math.floor(centerY + columnHeight / 2));
         const texture = getTexture(ray.tileType);
         const texX = Math.min(TEX_SIZE - 1, Math.max(0, Math.floor(ray.textureX * (TEX_SIZE - 1))));
-        const brightness = ray.side === 1 ? 0.72 : 1;
+        const brightness = ray.side === 1 ? 0.75 : 1;
 
         for (let y = yStart; y <= yEnd; y++) {
             const sampleY = (y - (centerY - columnHeight / 2)) / Math.max(columnHeight, 1);

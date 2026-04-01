@@ -7,13 +7,14 @@ import { normalizeAngle, selectFacingDirection } from '../sprites/enemies/frameU
 import { SPRITE_HEIGHT, SPRITE_WIDTH, spriteGenerator } from '../sprites/SpriteGenerator.js';
 import { Screen } from './screen.js';
 
-const FOG_NEAR = 3;
-const FOG_FAR = 10;
+const FOG_NEAR = 6;
+const FOG_FAR = 20;
+const FOG_MAX = 0.50;
 
 const spriteQueue = [];
 
 function applyFog(color, distance) {
-    const fogAmount = Math.max(0, Math.min(1, (distance - FOG_NEAR) / (FOG_FAR - FOG_NEAR)));
+    const fogAmount = Math.max(0, Math.min(FOG_MAX, ((distance - FOG_NEAR) / (FOG_FAR - FOG_NEAR)) * FOG_MAX));
     if (fogAmount <= 0) {
         return color;
     }

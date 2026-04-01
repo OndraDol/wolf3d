@@ -23,8 +23,8 @@ export class Screen {
         this.pixels = new Uint32Array(this.imageData.data.buffer);
 
         // Barvy pro strop a podlahu (ABGR formát kvůli little-endian)
-        this.ceilingColor = 0xFF333333; // tmavě šedá
-        this.floorColor = 0xFF555555;   // šedá
+        this.ceilingColor = 0xFF383838; // #383838 tmavě šedá
+        this.floorColor = 0xFF707070;   // #707070 světlejší šedá
     }
 
     /** Vyčisti buffer — strop nahoře, podlaha dole */
